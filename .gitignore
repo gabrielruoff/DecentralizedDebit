@@ -1,2 +1,7 @@
 #.env
 venv*/
+processTxFromCard.py
+readDataFromCard.py
+socktest.py
+socktest2.py
+writeDataToCard.py

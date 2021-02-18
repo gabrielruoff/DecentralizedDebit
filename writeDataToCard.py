@@ -10,7 +10,7 @@ multiwallet = multiwallet('C:/Users/GEruo/Documents/Monero/wallets/')
 
 rsacrypt.set_key(multiwallet.public_comm_key('merchant'), 'code')
 
-identifier = "geruoff:Bigh0rse10!!"
+identifier = "user:pass"
 
 enc_message = rsacrypt.encrypt(identifier)
 print("\n\n encrypted message: "+enc_message)

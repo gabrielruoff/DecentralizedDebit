@@ -10,7 +10,7 @@ multiwallet = multiwallet('C:/Users/GEruo/Documents/Monero/wallets/')
 
 # merchant wallet info
 merchant_wallet = 'merchant'
-rx_address = '42eKczsBGi5TXjpnHEovnk9R4YbZMBT6MFqfyhiTYEUUjWBepy5vPSYhK4N1Tr79nNgZAz4aqHj47VSukPkA4nWqBt36HjW'
+rx_address = 'rx'
 print('starting payment terminal | your merchant address is ' + rx_address)
 
 # make a reader instance

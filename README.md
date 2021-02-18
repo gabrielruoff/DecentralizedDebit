@@ -3,7 +3,7 @@
 A secure and anonymous cryptocurrency payment processor and point-of-sale system.
 
 To work on this repo:
-  1. edit DATADIR environment variable in .env to point to the repo's path
+  1. Edit DATADIR environment variable in .env to point to the repo's path
   2. Download bitcoin core and sync with the network
   3. Configure bitcoin rpc
     - open bitcoin core

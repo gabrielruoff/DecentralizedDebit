@@ -41,10 +41,17 @@ class bitcoinrpc:
         return balance[0]
 
     def sendtoaddress(self, rx, amount):
-
         commands = [ ["sendtoaddress", rx, amount ]]
         send = self.rpc_connection.batch_(commands)
         print(send)
+
+    def getnewaddress(self, wallet_name):
+        self.loadwallet(wallet_name)
+        commands = [["getnewaddress"]]
+        getnew = self.rpc_connection.batch_(commands)
+        self.unloadwallet(wallet_name)
+        print(getnew[0])
+        return getnew[0]
 
 
 # commands = [ ["createrawtransaction", [{"txid":"6dbe0e53413df27183e959922f9df859ea7646b574aafcef446e33978df97f15","vout":31}], [{"bc1q6j9td6m5g6ah8cgscm7wqjuxlrs6kakzadcrh4":amount}]] ]

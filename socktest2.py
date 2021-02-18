@@ -1,4 +1,4 @@
-from lib.monerosocks import server
+from lib.socks import server
 from lib.Monero import transaction
 from lib.Serial import arduino
 

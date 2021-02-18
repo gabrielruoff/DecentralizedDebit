@@ -6,7 +6,7 @@ from monero.wallet import Wallet
 from monero.backends.jsonrpc import JSONRPCWallet
 from lib.Crypt import RSAcrypt
 from lib.Serial import arduino
-from lib.monerosocks import server
+from lib.socks import server
 
 
 class transaction:

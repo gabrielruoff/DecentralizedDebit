@@ -1,13 +1,13 @@
 import time
 
-from lib import monerosocks
+from lib import socks
 from lib.Monero import *
 
 # make a wallet handler
 multiwallet = multiwallet('C:/Users/GEruo/Documents/Monero/wallets/')
 
 # start a sock server
-sock_server = monerosocks.server()
+sock_server = socks.server()
 sock_server.bind(port=12001)
 
 while 1:

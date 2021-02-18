@@ -1,4 +1,4 @@
-from lib.monerosocks import client
+from lib.socks import client
 from lib.Monero import transaction
 
 c = client(connect=True)

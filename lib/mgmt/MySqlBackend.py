@@ -20,6 +20,7 @@ MYSQL_TAB_BTCWALLETS = os.environ.get("MYSQL_TAB_BTCWALLETS")
 MYSQL_TAB_XMRWALLETS = os.environ.get("MYSQL_TAB_XMRWALLETS")
 KEY_PRIV_SUFFIX = os.environ.get("KEY_PRIV_SUFFIX")
 KEY_PUB_SUFFIX = os.environ.get("KEY_PUB_SUFFIX")
+MYSQL_TAB_TX_BLOCKCHAIN = os.environ.get("MYSQL_TAB_TX_BLOCKCHAIN")
 
 
 class _backend:
@@ -37,9 +38,12 @@ class _backend:
 
 
     def _create_account(self, user, passwd, merchant=False):
+        # see if this account exists
+        if self._select(MYSQL_TAB_USERS, 'username', user):
+            print('this username is taken')
+            return False
         passwd = sha224(user.encode('utf-8')+passwd.encode('utf-8'))
         self._insert(MYSQL_TAB_USERS, ['username', 'passwd'], [user, passwd.hexdigest()])
-
         # if this is a merchant account
         if merchant:
             wallet_name = self._getwalletname(user)
@@ -56,7 +60,6 @@ class _backend:
         # create a wallet name by hashing the users uid and passwd
         wallet_name = self._getwalletname(username)
         print(wallet_name.hexdigest())
-
         # make sure this wallet doesn't exist. If it doesn't create it
         if not self._select('btcwallets', 'name', wallet_name.hexdigest()):
             self.btcrpc.createwallet(wallet_name.hexdigest())
@@ -64,7 +67,6 @@ class _backend:
         else:
             print('this wallet already exists')
             return False
-
         # insert new wallet data into database - set balances to 0
         self._insert(MYSQL_TAB_BTCWALLETS, ['name', 'KEY_DIR', 'BALANCE_CONF', 'BALANCE_UNCONF'], [wallet_name.hexdigest(), (DATADIR+BTC_WALLET_DIR+wallet_name.hexdigest()).replace('\\', '\\\\'), 0, 0])
 
@@ -75,6 +77,27 @@ class _backend:
         balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name.hexdigest(), 10), self.btcrpc.getbalance(wallet_name.hexdigest())
         # update the database with these values
         return self._update('btcwallets', ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf], 'name', wallet_name.hexdigest())
+
+    def _get_new_address_btc(self, username):
+        # get the wallet name
+        wallet_name = self._getwalletname(username)
+        # get the new address
+        return self.btcrpc.getnewaddress(wallet_name.hexdigest())
+
+    ##########################################
+    #         TRANSACTION FUNCTIONS          #
+    ##########################################
+
+    def _check_transaction_is_original(self, tx):
+        return not self._select(MYSQL_DB+'.'+MYSQL_TAB_TX_BLOCKCHAIN, 'hash', tx.signed_hash, selection='block_id')
+
+    def _add_transaction_to_blockchain(self, tx):
+        # get required data
+        prev_hash = self._raw_query("SELECT prev_hash FROM " + MYSQL_DB+"."+MYSQL_TAB_TX_BLOCKCHAIN + " ORDER BY block_id DESC LIMIT 1")
+        block_id = self._raw_query("SELECT COUNT(block_id) FROM " + MYSQL_DB+"."+MYSQL_TAB_TX_BLOCKCHAIN)[0][0] + 1
+        hash = tx.signed_hash
+        return self._insert(MYSQL_DB+"."+MYSQL_TAB_TX_BLOCKCHAIN, [prev_hash, block_id, hash], ['prev_hash', 'block_id', 'hash'])
+
 
     ##########################################
     #           HELPER FUNCTIONS            #
@@ -114,16 +137,25 @@ class _backend:
         while fields:
             fieldsdata.append(fields.pop(0))
             fieldsdata.append(data.pop(0))
-        print(fieldsdata)
         d = (MYSQL_DB+'.'+table, *fieldsdata, where, target)
-        print(q, d, '\n', q%d)
         cursor = self.cnx.cursor()
         cursor.execute(q % d)
         self.cnx.commit()
-        updated= cursor.fetchall()
+        updated = cursor.fetchall()
         cursor.close()
         return updated
 
+    def _raw_query(self, q):
+        cursor = self.cnx.cursor()
+        print(q)
+        cursor.execute(q)
+        if "SELECT" in q.upper():
+            ret = cursor.fetchall()
+        elif "INSERT" in q.upper():
+            self.cnx.commit()
+            ret = True
+        cursor.close()
+        return ret
 
 bknd = _backend()
 fields = ['username', 'passwd']
@@ -132,6 +164,7 @@ data = ['one', 'two']
 # for i in range(10):
 # print(bknd._insert('accounts.users', fields, data))
 # print(bknd._select("users", "username", "one", selection='uid, passwd')[0])
-print(bknd._create_account('test2', 'test2', merchant=True))
+# print(bknd._create_account('merchant', 'test2', merchant=True))
 # print(bknd.update_balance_btc('test'))
 # print(bknd.update_balance_btc('test'))
+bknd._add_transaction_to_blockchain('hu')

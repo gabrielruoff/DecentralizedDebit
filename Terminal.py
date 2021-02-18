@@ -1,4 +1,4 @@
-from lib import monerosocks
+from lib import socks
 from lib.Monero import transaction
 from lib.Serial import arduino
 from lib.Monero import multiwallet
@@ -20,7 +20,7 @@ instr = ''
 while instr != 'exit':
 
     # start a socket server
-    sock_client = monerosocks.server()
+    sock_client = socks.server()
 
     # get input
     instr = input('Enter transaction amount ')

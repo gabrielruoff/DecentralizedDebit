@@ -21,6 +21,7 @@ MYSQL_TAB_XMRWALLETS = os.environ.get("MYSQL_TAB_XMRWALLETS")
 KEY_PRIV_SUFFIX = os.environ.get("KEY_PRIV_SUFFIX")
 KEY_PUB_SUFFIX = os.environ.get("KEY_PUB_SUFFIX")
 
+
 class _backend:
     def __init__(self):
         self.cnx = mysql.connector.connect(user=MYSQL_USER, password=MYSQL_PASS,
@@ -36,7 +37,7 @@ class _backend:
 
 
     def _create_account(self, user, passwd, merchant=False):
-        passwd = sha256(user.encode('utf-8')+passwd.encode('utf-8'))
+        passwd = sha224(user.encode('utf-8')+passwd.encode('utf-8'))
         self._insert(MYSQL_TAB_USERS, ['username', 'passwd'], [user, passwd.hexdigest()])
 
         # if this is a merchant account
@@ -82,7 +83,7 @@ class _backend:
     # helper function to get the wallet's name from a user's account name
     def _getwalletname(self, username):
         uid, passwd = self._select(MYSQL_TAB_USERS, "username", username, selection='uid, passwd')[0]
-        return sha(str(uid).encode('utf-8') + passwd.encode('utf-8'))
+        return sha224(str(uid).encode('utf-8') + passwd.encode('utf-8'))
 
     # helper functions start with _
     def _select(self, table, field, target, suffix="", selection='*'):

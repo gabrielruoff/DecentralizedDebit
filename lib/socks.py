@@ -1,6 +1,5 @@
 import socket
 
-
 class server:
 
     def __init__(self):
@@ -45,6 +44,8 @@ class server:
             self.sock.sendall(bytes(str(len(data)).zfill(3), "utf-8"))
             if isinstance(data, bytes):
                 self.sock.sendall(data)
+            elif isinstance(data, str):
+                self.sock.sendall(data.encode('utf-8'))
             else:
                 self.sock.sendall(bytes(data, "utf-8"))
             return True

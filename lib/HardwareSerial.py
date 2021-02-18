@@ -1,10 +1,19 @@
 import serial
 import time
 
+
 class arduino:
 
-    def connect(self, port, baud=9600, timeout=5, bytesize=8, parity='N', stopbits=1):
+    def __init__(self):
+        self.serialport = None
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def connect(self, port, baud=9600, timeout=5, bytesize=8, parity='N', stopbits=1):
         self.serialport = serial.Serial(port, baud, bytesize, parity, stopbits, timeout)
 
     def close(self):
@@ -16,15 +25,14 @@ class arduino:
         j=0
         for character in data:
             self.serialport.write(bytes(character, "utf-8"))
-            # time.sleep(0.02);
             i += 1
-            j+=1
-            if i>15:
+            j += 1
+            # wait every two bytes as to not overflow arduino buffer
+            if i > 15:
                 # print(i)
                 time.sleep(0.17)
-                i=0
-        # print('sent:',j, 'bytes')
-
+                i = 0
+        print('sent:', j, 'byte(s)')
 
         self.serialport.flush()
 

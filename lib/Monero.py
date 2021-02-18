@@ -5,7 +5,7 @@ from decimal import Decimal
 from monero.wallet import Wallet
 from monero.backends.jsonrpc import JSONRPCWallet
 from lib.Crypt import RSAcrypt
-from lib.Serial import arduino
+from lib.HardwareSerial import arduino
 from lib.socks import server
 
 

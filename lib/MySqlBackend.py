@@ -1,5 +1,3 @@
-from base64 import b64decode
-
 import mysql.connector
 from dotenv import load_dotenv
 import os
@@ -76,7 +74,6 @@ class _backend:
     def _create_wallet_btc(self, username):
         # create a wallet name by hashing the users uid and passwd
         wallet_name = self._getwalletname(username)
-        print(wallet_name)
         # make sure this wallet doesn't exist. If it doesn't create it
         if not self._select('btcwallets', 'name', wallet_name):
             self.btcrpc.createwallet(wallet_name)
@@ -105,6 +102,29 @@ class _backend:
     #         TRANSACTION FUNCTIONS          #
     ##########################################
 
+    # takes a verified transaction as input and processes it and adds it to the transaction blockchain
+    def process_transaction(self, tx):
+        # check that this transaction is not a duplicate
+        if self._check_transaction_is_original(tx):
+            txwallet, rxwallet = self._getwalletname(tx.tx_account_id_decrypt), self._getwalletname(tx.rx_account_id_decrypt)
+            amount, currency = tx.amount_decrypt, tx.currency_decrypt
+
+            # select a coin backend depending on the currency in question
+            if currency.lower() == 'btc':
+                coin_backend = Bitcoin.bitcoinrpc()
+            elif currency.lower() == 'xmr':
+                coin_backend = Monero.monerorpc()
+
+            # make a new receiving address
+            new_rx_address = coin_backend.getnewaddress(rxwallet)
+            print('created new rx address ' + new_rx_address)
+            # execute the transfer
+            coin_backend.sendtoaddress(txwallet, new_rx_address, amount)
+            # add transaction to blockchain
+            self._add_transaction_to_blockchain(tx)
+            return True
+        return False
+
     def _check_transaction_is_original(self, tx):
         print(sha224(tx.signed_hash).hexdigest())
         print(self._select(MYSQL_TAB_TX_BLOCKCHAIN, 'hash', sha224(tx.signed_hash).hexdigest(), selection='block_id'))
@@ -118,31 +138,22 @@ class _backend:
         hash = sha224(tx.signed_hash).hexdigest()
         return self._insert(MYSQL_TAB_TX_BLOCKCHAIN, ['prev_hash', 'block_id', 'hash'], [prev_hash, block_id, hash])
 
-    def _process_transaction(self, tx):
-        txwallet, rxwallet = self._getwalletname(tx.tx_account_id_decrypt), self._getwalletname(tx.rx_account_id_decrypt)
-        amount, currency = tx.amount_decrypt, tx.currency_decrypt
-
-        print(txwallet, rxwallet)
-        print(amount, currency)
-
-        # select a coin backend depending on the currency in question
-        if currency.lower() == 'btc':
-            coin_backend = Bitcoin.bitcoinrpc()
-        elif currency.lower() == 'xmr':
-            coin_backend = Monero.monerorpc()
-
-        # make a new receiving address
-        new_rx_address = coin_backend.getnewaddress(rxwallet)
-        # execute the transfer
-        coin_backend.sendtoaddress(txwallet, new_rx_address, amount)
-
     ##########################################
     #           HELPER FUNCTIONS            #
     ##########################################
 
-    def _get_merchant_signkey_from_username(self, username):
+    def _get_merchant_pub_signkey_from_username(self, username):
+        print(username)
         walletname = self._getwalletname(username)
         return DATADIR+MERCHANT_DATA+walletname+'\\'+walletname+KEY_PUB_SUFFIX
+
+    def _get_merchant_priv_signkey_from_username(self, username):
+        walletname = self._getwalletname(username)
+        return DATADIR+MERCHANT_DATA+walletname+'\\'+walletname+KEY_PRIV_SUFFIX
+
+    def _get_merchant_username_from_keyfile(self, key_file_path):
+        return key_file_path.split('\\')[-2]
+
 
     # helper function to get the wallet's name from a user's account name
     def _getwalletname(self, username):
@@ -201,16 +212,15 @@ class _backend:
         return ret
 
 bknd = _backend()
-fields = ['username', 'passwd']
-data = ['one', 'two']
-
 
 # print(bknd._create_account('customer', 'test2', merchant=False))
 # print(bknd._create_account('merchant', 'test2', merchant=True))
 # bknd._create_wallet_btc('merchant')
 # bknd._create_wallet_btc('customer')
 # bknd._become_merchant('merchant')
-# print(bknd._update_balance_btc('merchant'))
+print(bknd._update_balance_btc('merchant'))
+print(bknd._update_balance_btc('customer'))
+
 # print(bknd.update_balance_btc('test'))
 
 # bknd._add_transaction_to_blockchain('hu')

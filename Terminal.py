@@ -1,6 +1,6 @@
 from lib import socks
 from lib.Monero import transaction
-from lib.Serial import arduino
+from lib.HardwareSerial import arduino
 from lib.Monero import multiwallet
 from decimal import Decimal
 import time

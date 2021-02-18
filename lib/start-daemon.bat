@@ -1,0 +1,1 @@
+"C:\Program Files\Monero GUI Wallet\monerod.exe" --log-level 0

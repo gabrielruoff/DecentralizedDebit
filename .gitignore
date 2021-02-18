@@ -1,5 +1,6 @@
 #.env
 venv*/
+.idea
 processTxFromCard.py
 readDataFromCard.py
 socktest.py

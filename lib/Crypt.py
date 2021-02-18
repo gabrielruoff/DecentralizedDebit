@@ -21,8 +21,7 @@ class RSAcrypt:
         self.pkcs = None
         self.sha384 = None
 
-    def gen_key(self, code, wallet_name, dir,  len=2048):
-        print(dir+wallet_name+'\\'+wallet_name+KEY_PRIV_SUFFIX)
+    def gen_key(self, code, wallet_name, dir, len=2048):
         self.key = RSA.generate(len)
 
         encrypted_key = self.key.exportKey(format='DER', passphrase=code, pkcs=8)

@@ -158,7 +158,7 @@ class multiwallet:
         return self.dir+wallet+'/'+keyfilename
 
 
-class rpc_wallet:
+class monerorpc:
 
     def __init__(self, daemon_port, bind_addr, bind_port, transaction):
         self.daemon_port = daemon_port

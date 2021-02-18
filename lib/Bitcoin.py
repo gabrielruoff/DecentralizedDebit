@@ -22,34 +22,36 @@ class bitcoinrpc:
         create = self.rpc_connection.batch_(commands)
         print(create)
 
-    def loadwallet(self, wallet_name):
+    def _loadwallet(self, wallet_name):
         commands = [ ["loadwallet", DATADIR+BTC_WALLET_DIR+wallet_name] ]
         load = self.rpc_connection.batch_(commands)
-        print(load)
+        print('loaded', load)
 
-    def unloadwallet(self, wallet_name):
+    def _unloadwallet(self, wallet_name):
         commands = [ ["unloadwallet", DATADIR+BTC_WALLET_DIR+wallet_name] ]
         unload = self.rpc_connection.batch_(commands)
         print(unload)
 
     def getbalance(self, wallet_name, minconf=0):
-        self.loadwallet(wallet_name)
+        self._loadwallet(wallet_name)
         commands = [ ["getbalance", "*", minconf] ]
         balance = self.rpc_connection.batch_(commands)
-        self.unloadwallet(wallet_name)
+        self._unloadwallet(wallet_name)
         print(balance[0])
         return balance[0]
 
-    def sendtoaddress(self, rx, amount):
+    def sendtoaddress(self, tx_wallet_name, rx, amount):
+        self._loadwallet(tx_wallet_name)
         commands = [ ["sendtoaddress", rx, amount ]]
         send = self.rpc_connection.batch_(commands)
+        self._unloadwallet(tx_wallet_name)
         print(send)
 
     def getnewaddress(self, wallet_name):
-        self.loadwallet(wallet_name)
+        self._loadwallet(wallet_name)
         commands = [["getnewaddress"]]
         getnew = self.rpc_connection.batch_(commands)
-        self.unloadwallet(wallet_name)
+        self._unloadwallet(wallet_name)
         print(getnew[0])
         return getnew[0]
 

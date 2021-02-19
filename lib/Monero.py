@@ -1,12 +1,12 @@
+# Gabriel Ruoff, geruoff@syr.edu
+# Backend class to handle direct calls to the monero RPC server
+
 import os
 import subprocess
 from decimal import Decimal
-
 from monero.wallet import Wallet
 from monero.backends.jsonrpc import JSONRPCWallet
 from lib.Crypt import RSAcrypt
-from lib.HardwareSerial import arduino
-from lib.socks import server
 
 
 class transaction:

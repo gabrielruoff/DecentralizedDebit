@@ -1,3 +1,6 @@
+# Gabriel Ruoff, geruoff@syr.edu
+import binascii
+
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import pkcs1_15
@@ -66,9 +69,10 @@ class RSAcrypt:
     def sign(self, data, key):
         self.pkcs = pkcs1_15.new(key)
         self.sha384 = SHA384.new()
-        self.sha384.update(str.encode(data))
+        self.sha384.update(str.encode(data, 'utf-8'))
+        sig = self.pkcs.sign(self.sha384)
 
-        return self.pkcs.sign(self.sha384)
+        return binascii.hexlify(sig).decode('ascii')
 
     def verify(self, data, key, signature):
         self.pkcs = pkcs1_15.new(key)
@@ -78,4 +82,4 @@ class RSAcrypt:
             data = str.encode(data)
         self.sha384.update(data)
 
-        return self.pkcs.verify(self.sha384, signature) is None
+        return self.pkcs.verify(self.sha384, binascii.unhexlify(signature)) is None

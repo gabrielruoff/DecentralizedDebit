@@ -1,3 +1,6 @@
+# Gabriel Ruoff, geruoff@syr.edu
+# Backend class to handle direct calls to the bitcoin RPC server
+
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from dotenv import load_dotenv
 import os
@@ -43,9 +46,13 @@ class bitcoinrpc:
     def sendtoaddress(self, tx_wallet_name, rx, amount):
         self._loadwallet(tx_wallet_name)
         commands = [ ["sendtoaddress", rx, amount ]]
-        send = self.rpc_connection.batch_(commands)
+        try:
+            send = self.rpc_connection.batch_(commands)
+        except JSONRPCException as e:
+            return False
         self._unloadwallet(tx_wallet_name)
         print(send)
+        return True
 
     def getnewaddress(self, wallet_name):
         self._loadwallet(wallet_name)

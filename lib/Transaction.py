@@ -1,7 +1,9 @@
-from lib.Crypt import RSAcrypt
-from lib.MySqlBackend import _backend
-import sys
+# Gabriel Ruoff, geruoff@syr.edu
+# Class to facilitate the creation, signing, transmission, verification, and decryption of merchant-client
+# transactions
 
+from lib.Crypt import RSAcrypt
+from lib import MySqlBackend
 
 class transaction:
 
@@ -18,7 +20,7 @@ class transaction:
             cls.verified, cls.signed = False, False
 
             # get the merchant's sign key
-            with _backend() as backend:
+            with MySqlBackend._backend() as backend:
                 _sign_key = backend._get_merchant_pub_signkey_from_username(cls.signer)
 
             # set key
@@ -36,7 +38,6 @@ class transaction:
 
             else:
                 print('invalid hash')
-                raise Exception
 
         # extract variables from args
         cls.rx_data, cls.tx_data, cls.amount, cls.currency = map(str, cls.args[:-1])
@@ -73,25 +74,25 @@ class transaction:
         self.signed, self.signer = True, signer
 
     def verify(self):
-        print(self.tx_data)
         return self.rsacrypt.verify((self.rx_data+self.tx_data), self.rsacrypt.key, self.signed_hash)
 
-    def sock_import(self, sock_client):
-        print('importing transaction from ' + str(sock_client.conn.getpeername()))
-        imported_tx = []
-        for i in range(4):
-            # do not decode signed hash
-            if i == 2:
-                imported_tx.append(sock_client.receive())
-            else:
-                imported_tx.append(sock_client.receive().strip().decode('utf-8', 'replace'))
-        return transaction(*imported_tx, importtx=True)
-
-    def export(self, sock_server):
-        for item in [self.rx_data, self.tx_data, self.signed_hash, self.signer]:
-            if not sock_server.send(item):
-                return False
-        return True
+    # deprecated #
+    # def sock_import(self, sock_client):
+    #     print('importing transaction from ' + str(sock_client.conn.getpeername()))
+    #     imported_tx = []
+    #     for i in range(4):
+    #         # do not decode signed hash
+    #         if i == 2:
+    #             imported_tx.append(sock_client.receive())
+    #         else:
+    #             imported_tx.append(sock_client.receive().strip().decode('utf-8', 'replace'))
+    #     return transaction(*imported_tx, importtx=True)
+    #
+    # def export(self, sock_server):
+    #     for item in [self.rx_data, self.tx_data, self.signed_hash, self.signer]:
+    #         if not sock_server.send(item):
+    #             return False
+    #     return True
 
     # decrypt transaction data
     def decrypt(self, privatekey, code=''):

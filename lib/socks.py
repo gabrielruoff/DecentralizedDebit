@@ -1,4 +1,17 @@
 import socket
+from lib.Crypt import RSAcrypt
+from dotenv import load_dotenv
+import os
+
+# load .env
+load_dotenv()
+# set env variables
+DATADIR = os.environ.get("DATADIR")
+MASTER_KEY_PREF = os.environ.get("MASTER_KEY_PREF")
+MASTER_KEY_DIR = os.environ.get("MASTER_KEY_DIR")
+KEY_PRIV_SUFFIX = os.environ.get("KEY_PRIV_SUFFIX")
+MASTER_KEY_PASS = os.environ.get("MASTER_KEY_PASS")
+
 
 class server:
 
@@ -60,3 +73,12 @@ class server:
         # then receive that number of bytes
         x = int(self.conn.recv(prefix))
         return self.conn.recv(x)
+
+    # def send_message_over_protocol(self, method, data, enc_key):
+    #     # construct the message
+    #     self._encrypt_and_format_request(data, enc_key)
+    #     # send a message describing how many pieces of data are to follow
+    #     self.send(len(data))
+    #
+    # def _encrypt_and_format_message_data(self, data):
+    #     # import the key and encrypt the data

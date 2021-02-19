@@ -21,6 +21,12 @@ class RSAcrypt:
         self.pkcs = None
         self.sha384 = None
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     def gen_key(self, code, wallet_name, dir, len=2048):
         self.key = RSA.generate(len)
 

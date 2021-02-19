@@ -22,7 +22,6 @@ KEY_PRIV_SUFFIX = os.environ.get("KEY_PRIV_SUFFIX")
 KEY_PUB_SUFFIX = os.environ.get("KEY_PUB_SUFFIX")
 MYSQL_TAB_TX_BLOCKCHAIN = os.environ.get("MYSQL_TAB_TX_BLOCKCHAIN")
 
-
 class _backend:
     def __init__(self):
         self.cnx = mysql.connector.connect(user=MYSQL_USER, password=MYSQL_PASS,
@@ -45,10 +44,10 @@ class _backend:
     def _create_account(self, user, passwd, merchant=False):
         # see if this account exists
         if self._select(MYSQL_TAB_USERS, 'username', user):
-            print('this username is taken')
-            return False
+            return self._build_api_response('false', 'accountexists')
+
         passwd = sha224(user.encode('utf-8')+passwd.encode('utf-8')).hexdigest()
-        self._insert(MYSQL_TAB_USERS, ['username', 'passwd', 'is_merchant'], [user, passwd, 1])
+        self._insert(MYSQL_TAB_USERS, ['username', 'passwd', 'is_merchant'], [user, passwd, 0])
         # if this is a merchant account
         if merchant:
             wallet_name = self._getwalletname(user)
@@ -56,16 +55,23 @@ class _backend:
             code = self._select('users', 'username', user, selection='passwd')[0]
             self.rsacrypt.gen_key(*code, wallet_name, DATADIR+MERCHANT_DATA)
             # update the user as a merchant in the system
-            self._update(MYSQL_DB+'.'+MYSQL_TAB_USERS, ['is_merchant'], [1], 'username', user, suffix=(' AND passwd='+passwd))
+            self._update(MYSQL_TAB_USERS, ['is_merchant'], [1], 'username', user)
+
+        return self._build_api_response('true', '', "'user':'%s'," % user)
 
     def _become_merchant(self, user):
-        print('making user ' + user + ' a merchant')
-        wallet_name = self._getwalletname(user)
-        # create a keypair, use their account password as the code
-        code = self._select('users', 'username', user, selection='passwd')[0]
-        self.rsacrypt.gen_key(*code, wallet_name, DATADIR + MERCHANT_DATA)
-        # update the user as a merchant in the system
-        self._update(MYSQL_DB + '.' + MYSQL_TAB_USERS, ['is_merchant'], [1], 'username', user, suffix=(' AND passwd=' + code))
+        # make sure they aren't already a merchant
+        if not self._select(MYSQL_TAB_USERS, 'is_merchant', '1'):
+            print('making user ' + user + ' a merchant')
+            wallet_name = self._getwalletname(user)
+            # create a keypair, use their account password as the code
+            code = self._select('users', 'username', user, selection='passwd')[0]
+            self.rsacrypt.gen_key(*code, wallet_name, DATADIR + MERCHANT_DATA)
+            # update the user as a merchant in the system
+            self._update(MYSQL_TAB_USERS, ['is_merchant'], [1], 'username', user, suffix=(' AND passwd=' + code))
+            return self._build_api_response('true', '', "{'username':%s,}" % user)
+
+        return self._build_api_response('false', 'alreadymerchant')
 
     ##########################################
     #           BITCOIN FUNCTIONS            #
@@ -77,12 +83,15 @@ class _backend:
         # make sure this wallet doesn't exist. If it doesn't create it
         if not self._select('btcwallets', 'name', wallet_name):
             self.btcrpc.createwallet(wallet_name)
-            self.btcrpc.unloadwallet(wallet_name)
+            self.btcrpc._unloadwallet(wallet_name)
         else:
             print('this wallet already exists')
-            return False
+            return self._build_api_response('false', 'walletexists')
         # insert new wallet data into database - set balances to 0
-        self._insert(MYSQL_TAB_BTCWALLETS, ['name', 'KEY_DIR', 'BALANCE_CONF', 'BALANCE_UNCONF'], [wallet_name, (DATADIR+BTC_WALLET_DIR+wallet_name).replace('\\', '\\\\'), 0, 0])
+        if self._insert(MYSQL_TAB_BTCWALLETS, ['name', 'KEY_DIR', 'BALANCE_CONF', 'BALANCE_UNCONF'], [wallet_name, (DATADIR+BTC_WALLET_DIR+wallet_name).replace('\\', '\\\\'), 0, 0]):
+            print('inserted wallet data')
+            return self._build_api_response('True')
+        return self._build_api_response('False', err='genericapierror')
 
     def _update_balance_btc(self, username):
         # get the wallet name
@@ -90,13 +99,18 @@ class _backend:
         # retrieve the wallet's confirmed and unconfirmed balances
         balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 10), self.btcrpc.getbalance(wallet_name)
         # update the database with these values
-        return self._update('btcwallets', ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf], 'name', wallet_name)
+        if self._update('btcwallets', ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf], 'name', wallet_name):
+            return self._build_api_response('True')
+        return self._build_api_response('False', err='genericapierror')
 
     def _get_new_address_btc(self, username):
         # get the wallet name
         wallet_name = self._getwalletname(username)
         # get the new address
-        return self.btcrpc.getnewaddress(wallet_name.hexdigest())
+        new_address = self.btcrpc.getnewaddress(wallet_name.hexdigest())
+        if not new_address:
+            return self._build_api_response('False', err='generic')
+        return new_address
 
     ##########################################
     #         TRANSACTION FUNCTIONS          #
@@ -142,6 +156,14 @@ class _backend:
     #           HELPER FUNCTIONS            #
     ##########################################
 
+    def _build_api_response(self, success, err="", data=""):
+        return eval("{'success':'%s', %s 'err':'%s'}" % (success, data, err))
+
+    def _validate_user_credentials(self, username, password):
+        passwd = sha224(username.encode('utf-8')+password.encode('utf-8')).hexdigest()
+        print(passwd, self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0])
+        return self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0].strip() == passwd.strip()
+
     def _get_merchant_pub_signkey_from_username(self, username):
         print(username)
         walletname = self._getwalletname(username)
@@ -154,7 +176,6 @@ class _backend:
     def _get_merchant_username_from_keyfile(self, key_file_path):
         return key_file_path.split('\\')[-2]
 
-
     # helper function to get the wallet's name from a user's account name
     def _getwalletname(self, username):
         uid, passwd = self._select(MYSQL_TAB_USERS, "username", username, selection='uid, passwd')[0]
@@ -162,9 +183,9 @@ class _backend:
         return sha224(str(uid).encode('utf-8') + passwd.encode('utf-8')).hexdigest()[16:64]
 
     # helper functions start with _
-    def _select(self, table, field, target, suffix="", selection='*'):
+    def _select(self, table, match_field, match_target, suffix="", selection='*'):
         q = "SELECT %s FROM %s WHERE %s='%s'" + suffix
-        d = (selection, (MYSQL_DB+'.'+table), field, target)
+        d = (selection, (MYSQL_DB+'.'+table), match_field, match_target)
         print(q%d)
         cursor = self.cnx.cursor()
         cursor.execute(q % d)
@@ -179,9 +200,8 @@ class _backend:
         cursor = self.cnx.cursor()
         cursor.execute(q % d)
         self.cnx.commit()
-        selected = cursor.fetchall()
         cursor.close()
-        return selected
+        return True
 
     def _update(self, table, fields, data, where, target, suffix=''):
         q = "UPDATE %s SET " + (("%s='%s', "*(len(fields)-1)) + "%s='%s'") + " WHERE %s='%s'" + suffix
@@ -192,11 +212,12 @@ class _backend:
             fieldsdata.append(data.pop(0))
         d = (MYSQL_DB+'.'+table, *fieldsdata, where, target)
         cursor = self.cnx.cursor()
+        print(q % d)
         cursor.execute(q % d)
         self.cnx.commit()
         updated = cursor.fetchall()
         cursor.close()
-        return updated
+        return True
 
     # helper function for a generic query
     def _raw_query(self, q):
@@ -218,8 +239,8 @@ bknd = _backend()
 # bknd._create_wallet_btc('merchant')
 # bknd._create_wallet_btc('customer')
 # bknd._become_merchant('merchant')
-print(bknd._update_balance_btc('merchant'))
-print(bknd._update_balance_btc('customer'))
+# print(bknd._update_balance_btc('merchant'))
+# print(bknd._update_balance_btc('customer'))
 
 # print(bknd.update_balance_btc('test'))
 

@@ -1,3 +1,4 @@
+import binascii
 import os
 from dotenv import load_dotenv
 from lib.Transaction import transaction
@@ -6,6 +7,9 @@ from lib import MySqlBackend
 from lib.HardwareSerial import arduino
 from decimal import Decimal
 import time
+import requests
+import json
+
 
 # load .env
 load_dotenv()
@@ -69,27 +73,39 @@ while instr != 'exit':
         print('\nbuilt transaction:')
         tx.print_tx()
 
-        # tximport = transaction(tx.rx_data, tx.tx_data, tx.signed_hash, tx.sign_key, importtx=True)
-        # tx.print_tx(enc=True)
+        url = "http://localhost:5000/Merchant/merchant"
+        data = {'method': 'submittransaction', 'body': {
+            'rx_data': tx.rx_data,
+            'tx_data': tx.tx_data,
+            'signed_hash': tx.signed_hash,
+            'signer': merchant, 'password': 'tet2'}}
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
-        # try and connect to to the server
-        print('waiting for a response to export to server')
-        while 1:
-            try:
-                sock_client.connect('127.0.0.1', 12001)
-                # sock_client.send(sock_server.addr+':'+str(sock_server.port))
-                break
-            except ConnectionRefusedError:
-                pass
-        # wait for a socket connection
-        # accepted = sock_server.accept()
-        # while not accepted:
-        #     accepted = sock_server.accept()
+        r = requests.post(url, data=json.dumps(data), headers=headers)
+
+        print(r.json())
+
+        # tximport = transaction(tx.rx_data, tx.tx_data, tx.signed_hash, tx.signer, importtx=True)
+        # tx.print_tx()
+
+        # # try and connect to to the server
+        # print('waiting for a response to export to server')
+        # while 1:
+        #     try:
+        #         sock_client.connect('127.0.0.1', 12001)
+        #         # sock_client.send(sock_server.addr+':'+str(sock_server.port))
+        #         break
+        #     except ConnectionRefusedError:
+        #         pass
+        # # wait for a socket connection
+        # # accepted = sock_server.accept()
+        # # while not accepted:
+        # #     accepted = sock_server.accept()
+        # #
+        # # print(sock_server.conn.getsockname)
         #
-        # print(sock_server.conn.getsockname)
-
-        # export transaction
-        print('exporting transaction')
-        tx.export(sock_client)
+        # # export transaction
+        # print('exporting transaction')
+        # tx.export(sock_client)
 
         sock_client.sock.close()

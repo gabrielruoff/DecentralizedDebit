@@ -78,7 +78,7 @@ while instr != 'exit':
             'rx_data': tx.rx_data,
             'tx_data': tx.tx_data,
             'signed_hash': tx.signed_hash,
-            'signer': merchant, 'password': 'tet2'}}
+            'signer': merchant, 'password': 'test2'}}
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
         r = requests.post(url, data=json.dumps(data), headers=headers)

@@ -2,8 +2,8 @@
 # Class to facilitate the creation, signing, transmission, verification, and decryption of merchant-client
 # transactions
 
-from lib.Crypt import RSAcrypt
-from lib import MySqlBackend
+from Crypt import RSAcrypt
+import MySqlBackend
 
 class transaction:
 

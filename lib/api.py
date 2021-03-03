@@ -34,6 +34,7 @@ class Account(Resource):
         # get request method and body
         method, body = content['method'], content['body']
         # METHODS
+        # authenticate: url /Account/<username> { method: authenticate } body = { password }
         # createwalletbtc: url /Account/<username> { method: createwalletbtc } body = { password }
         with account() as a:
             func = getattr(a, method)
@@ -50,6 +51,7 @@ class Wallet(Resource):
         method, body = content['method'], content['body']
         # METHODS
         # getbalance: url /Wallet/<username>/<currency> { method: getbalance } body = { password }
+        # - currency = '*' returns balance of all open wallets under this account
         # getnewaddress: url /Wallet/<username>/<currency> { method: getnewaddress } body = { password }
         with wallet() as w:
             func = getattr(w, method)
@@ -84,4 +86,4 @@ api.add_resource(Wallet, '/Wallet/<username>/<currency>')
 api.add_resource(Merchant, '/Merchant/<username>')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

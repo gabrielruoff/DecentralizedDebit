@@ -1,12 +1,13 @@
 # Gabriel Ruoff, geruoff@syr.edu
 # Backend class to handle low-level database calls as well as database and wallet helper functions
 import binascii
-
+import uuid
+from datetime import datetime, timedelta
 import mysql.connector
 from dotenv import load_dotenv
 import os
 from hashlib import sha224
-from lib import Bitcoin, Crypt, Monero, Transaction
+import Bitcoin, Crypt, Monero, Transaction
 
 # load .env
 load_dotenv()
@@ -20,6 +21,7 @@ MYSQL_HOST = os.environ.get("MYSQL_HOST")
 MYSQL_USER = os.environ.get("MYSQL_USER")
 MYSQL_PASS = os.environ.get("MYSQL_PASS")
 MYSQL_TAB_USERS = os.environ.get("MYSQL_TAB_USERS")
+MYSQL_TAB_SESSIONS = os.environ.get("MYSQL_TAB_SESSIONS")
 MYSQL_TAB_BTCWALLETS = os.environ.get("MYSQL_TAB_BTCWALLETS")
 MYSQL_TAB_XMRWALLETS = os.environ.get("MYSQL_TAB_XMRWALLETS")
 KEY_PRIV_SUFFIX = os.environ.get("KEY_PRIV_SUFFIX")
@@ -28,7 +30,6 @@ MYSQL_TAB_TX_BLOCKCHAIN = os.environ.get("MYSQL_TAB_TX_BLOCKCHAIN")
 MASTER_KEY_DIR = os.environ.get("MASTER_KEY_DIR")
 MASTER_KEY_PREF = os.environ.get("MASTER_KEY_PREF")
 MASTER_KEY_PASS = os.environ.get("MASTER_KEY_PASS")
-
 
 class _backend:
     def __init__(self):
@@ -81,6 +82,66 @@ class _backend:
 
         return self._build_api_response('false', 'alreadymerchant')
 
+    def _generate_session_id(self, username):
+        # remove any previous session id related to this user
+        self._destroy_session(username=username)
+        # create a new session id
+        session_id = str(uuid.uuid4())
+        if self._insert(MYSQL_TAB_SESSIONS, ['username', 'session_id'], [username, session_id]):
+            return self._build_api_response('True', data={'session_id': session_id})
+        return self._build_api_response('False', err='genericapierror')
+
+    def _destroy_session(self, session_id=None, username=None):
+        if username is None:
+            print('here')
+            destroyquery = self._raw_query("DELETE FROM %s WHERE session_id='%s'" % (MYSQL_DB+'.'+MYSQL_TAB_SESSIONS, session_id))
+        else:
+            destroyquery = self._raw_query("DELETE FROM %s WHERE username='%s'" % (MYSQL_DB+'.'+MYSQL_TAB_SESSIONS, username))
+        if destroyquery:
+            return self._build_api_response(True)
+        return self._build_api_response(False, err='genericapierror')
+
+    def _update_session(self, session_id):
+        if self._update(MYSQL_TAB_SESSIONS, ['expire_at'], datetime.now()+timedelta(minutes=60), 'session_id', session_id):
+            return self._build_api_response('True')
+        return self._build_api_response('False', err='genericapierror')
+        # unfinished
+
+    def _validate_session(self, session_id):
+        expire_at = self._select(MYSQL_TAB_SESSIONS, 'session_id', session_id, selection='expire_at')[0][0]
+        print(expire_at)
+        return expire_at > datetime.now()
+
+    ##########################################
+    #        GENERAL WALLET FUNCTIONS        #
+    ##########################################
+
+    def _list_account_wallets(self, username):
+        # get list of wallets pertaining to user
+        wallets = self._select(MYSQL_TAB_USERS, 'username', username)[0][4:]
+        return wallets
+        # update balance for each wallet that the user holds and add to array
+        # for i in
+
+    def _list_supported_currencies(self):
+        # get a list of supported currencies
+        currencies = self._raw_query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME='users' and ORDINAL_POSITION>4")
+        currencies = [i[0].split('wallet_')[1] for i in currencies]
+        return currencies
+
+    def update_balance_all(self, username):
+        # update balance for each wallet that the user holds and add to array
+        balances = {}
+        wallets = self._list_account_wallets(username)
+        currencies = self._list_supported_currencies()
+        for i, w in enumerate(wallets):
+            if w == 1:
+                func = getattr(self, '_update_balance_'+currencies[i])
+                balances[currencies[i]] = func(username)['data']
+            else:
+                balances[currencies[i]] = 'null'
+        return balances
+
     ##########################################
     #           BITCOIN FUNCTIONS            #
     ##########################################
@@ -99,19 +160,22 @@ class _backend:
         if self._insert(MYSQL_TAB_BTCWALLETS, ['name', 'KEY_DIR', 'BALANCE_CONF', 'BALANCE_UNCONF'],
                         [wallet_name, (DATADIR + BTC_WALLET_DIR + wallet_name).replace('\\', '\\\\'), 0, 0]):
             print('inserted wallet data')
-            return self._build_api_response('True')
+            # update user account data
+            if self._update(MYSQL_TAB_USERS, ['wallet_btc'], [True], 'username', username):
+                print('updated user account')
+                return self._build_api_response('True')
         return self._build_api_response('False', err='genericapierror')
 
     def _update_balance_btc(self, username):
         # get the wallet name
         wallet_name = self._getwalletname(username)
+        print(wallet_name)
         # retrieve the wallet's confirmed and unconfirmed balances
         balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 10), self.btcrpc.getbalance(wallet_name)
         # update the database with these values
         if self._update('btcwallets', ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf], 'name',
                         wallet_name):
-            return self._build_api_response('True', data="'balance_conf':%s, 'balance_unconf':%s," % (
-            balance_conf, balance_unconf))
+            return self._build_api_response('True', data={'balance_conf':str(balance_conf), 'balance_unconf':str(balance_unconf)})
         return self._build_api_response('False', err='genericapierror')
 
     def _get_new_address_btc(self, username):
@@ -186,12 +250,19 @@ class _backend:
     ##########################################
 
     def _build_api_response(self, success, err="", data=""):
-        return eval("{'success':'%s', %s 'err':'%s'}" % (success, data, err))
+        response = {'success': '', 'data': {}, 'err': ''}
+        response['success'] = success
+        response['data'] = data
+        response['err'] = err
+        return response
 
     def _validate_user_credentials(self, username, password):
         passwd = sha224(username.encode('utf-8') + password.encode('utf-8')).hexdigest()
-        print(passwd, self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0])
-        return self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0].strip() == passwd.strip()
+        try:
+            print(passwd, self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0])
+            return self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0].strip() == passwd.strip()
+        except IndexError:
+            return False
 
     def _get_merchant_pub_signkey_from_username(self, username):
         print(username)
@@ -258,12 +329,13 @@ class _backend:
     # helper function for a generic query
     def _raw_query(self, q):
         cursor = self.cnx.cursor()
-        print(q)
         cursor.execute(q)
         if "SELECT" in q.upper():
             ret = cursor.fetchall()
-        elif "INSERT" in q.upper():
+        elif "INSERT" in q.upper() or "DELETE" in q.upper():
             self.cnx.commit()
+            ret = True
+        else:
             ret = True
         cursor.close()
         return ret

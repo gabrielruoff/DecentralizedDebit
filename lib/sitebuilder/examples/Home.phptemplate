@@ -1,0 +1,47 @@
+#{php1}
+<?php
+
+session_start();
+require_once('../Backend.php');
+
+use Backend\apibackend;
+
+$b = new apibackend();
+
+#exclude
+$_SESSION['username'] = 'apitest';
+$password = 'test2';
+$_SESSION['sessionid'] = $b->generatesessionid($_SESSION['username'], $password)->data->session_id;
+#/exclude
+
+$username = $_SESSION['username'];
+$currency = '*';
+$balances = $b->getbalance($username, $currency, $_SESSION['sessionid']);
+
+function make_balance_block($currency, $data)
+{
+    ?>
+    <div style="border-style: solid; border-color: aqua">
+        <?php
+        $icons = '/resources/icons';
+        echo "<img style=\"width: 250px; height: 250px;\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if ($data->{$currency} != 'null') {
+            echo "<p> " . strtoupper($currency) . " Balance: </p>";
+            echo "<p> Confirmed: " . $data->{$currency}->balance_conf . " </p>";
+            echo "<p> Unconfirmed: " . $data->{$currency}->balance_unconf . " </p>";
+        } else {
+            echo "<p> No " . strtoupper($currency) . " Wallet </p>";
+        }
+        ?>
+    </div>
+<?php } ?>
+#{/php1}
+
+#{php2}
+<?php
+// make a block displaying balance data for each wallet
+foreach ($balances->data as $key => $value) {
+    make_balance_block($key, $balances->data);
+}
+?>
+#{/php2}

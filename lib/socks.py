@@ -1,5 +1,5 @@
 import socket
-from lib.Crypt import RSAcrypt
+from Crypt import RSAcrypt
 from dotenv import load_dotenv
 import os
 

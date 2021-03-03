@@ -46,8 +46,7 @@ def selectcodefromtemplate(filename, indicatorstr):
         if indicatorstr in line:
             for j, line2 in enumerate(templatecontent):
                 if indicatorstr[:2]+'/'+indicatorstr[2:] in line2:
-                    # i+1 to remove the tag
-                    templatecontent[i] = "<!-- "+indicatorstr[0]+'!'+indicatorstr[1:]+" -->\n"
+                    templatecontent[i] = templatecontent[i].replace(indicatorstr,"<!-- " + indicatorstr[0] + '!' + indicatorstr[1:] + " -->\n")
                     return templatecontent[i:j]
 
 
@@ -58,31 +57,48 @@ def buildpage(filename):
         # pagecontent = [x.strip() for x in f.readlines()]
         f.close()
 
+    original_length = len(pagecontent)
+
     # iterate throught the page contents
+    results = []
     for i, line in enumerate(pagecontent):
         # print(line)
         # look for a template indicator
-        results = startindicator.findall(line)
-        if results:
+        _results = startindicator.findall(line)
+        if _results:
+            results.append([_results[0], i])
             # print('found ' + result.group(0))
 
-            # look for this indicator in the html file and move php code into buffer
-            for result in results:
-                buffer = selectcodefromtemplate(filename, result)
-                # insert code into static page
-                # print(buffer)
-                pagecontent = pagecontent[:i] + buffer + pagecontent[i+1:]
-                with open(htmldir + stripextension(filename) + '.php', 'w') as f:
-                    f.write("".join(pagecontent))
-                    f.close()
+    # look for this indicator in the html file and move php code into buffer
+    # print(results)
+    i_correction = 0
+    for result in results:
+        i = result[1] + i_correction
+        # print(i, i_correction)
+        buffer = selectcodefromtemplate(filename, result[0])
+        # insert code into static page
+        # print(pagecontent[i])
+        # print(pagecontent[i].index("#"))
 
-                #refresh
-                with open(htmldir + stripextension(filename) + '.php', 'r') as f:
-                    pagecontent = f.readlines()
-                    f.close()
+        splitline = pagecontent[i].rstrip()
+        indicatorstr = startindicator.search(splitline).group(0)
+        linestart = splitline.index(indicatorstr)
+        lineend = linestart + len(indicatorstr)
+        # print(linestart, lineend)
+
+        pagecontent = pagecontent[:i] + [pagecontent[i][:linestart]] + buffer + [pagecontent[i][lineend:]] + pagecontent[i+1:]
+        with open(htmldir + stripextension(filename) + '.php', 'w') as f:
+            f.write("".join(pagecontent))
+            i_correction += len(pagecontent)-original_length
+            f.close()
+
+        #refresh
+        with open(htmldir + stripextension(filename) + '.php', 'r') as f:
+            pagecontent = f.readlines()
+            f.close()
+
 
 print('1. Searching for pages to build')
-
 # iterate through static html directory
 for filename in os.listdir(htmldir):
     # iterate through html files

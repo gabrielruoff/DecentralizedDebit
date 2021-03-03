@@ -1,11 +1,14 @@
+<!-- #!{php1} -->
 <?php
 
 session_start();
-require_once('Backend.php');
+require_once('../Backend.php');
 
 use Backend\apibackend;
 
 $b = new apibackend();
+
+
 $username = $_SESSION['username'];
 $currency = '*';
 $balances = $b->getbalance($username, $currency, $_SESSION['sessionid']);
@@ -26,6 +29,7 @@ function make_balance_block($currency, $data)
         }
         ?>
     </div>
+<?php } ?>
 <!DOCTYPE html>
 <html style="font-size: 16px;">
 <head>
@@ -91,7 +95,13 @@ function make_balance_block($currency, $data)
     <a href="login.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-6 u-btn-1">Sign In</a>
     <a href="register.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-6 u-btn-2">Get Started</a>
 </div></header>
-<section class="u-align-left u-black u-clearfix u-section-1" id="sec-f0d0">
+<!-- #!{php2} -->
+<?php
+// make a block displaying balance data for each wallet
+foreach ($balances->data as $key => $value) {
+    make_balance_block($key, $balances->data);
+}
+?>
     <div class="u-clearfix u-sheet u-sheet-1">
         <h1 class="u-text u-text-body-alt-color u-text-1">Welcome</h1>
         <div class="u-clearfix u-expanded-width u-layout-wrap u-layout-wrap-1">
@@ -122,6 +132,7 @@ function make_balance_block($currency, $data)
             </div>
         </div>
         <div class="u-black u-border-2 u-border-grey-75 u-container-style u-expanded-width u-group u-group-1">
+            #{php2}
             <div class="u-container-layout u-container-layout-4">
                 <a href="#" class="u-border-2 u-border-hover-palette-1-base u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-2">Deposit</a>
                 <a href="#" class="u-border-2 u-border-hover-palette-1-base u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-3">Withdraw</a>

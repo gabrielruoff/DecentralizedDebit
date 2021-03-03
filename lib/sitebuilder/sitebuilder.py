@@ -46,13 +46,30 @@ def selectcodefromtemplate(filename, indicatorstr):
         if indicatorstr in line:
             for j, line2 in enumerate(templatecontent):
                 if indicatorstr[:2]+'/'+indicatorstr[2:] in line2:
-                    templatecontent[i] = templatecontent[i].replace(indicatorstr,"<!-- " + indicatorstr[0] + '!' + indicatorstr[1:] + " -->\n")
+                    templatecontent[i] = templatecontent[i].replace(indicatorstr,"<!-- " + indicatorstr[0] + '!' + indicatorstr[1:] + " -->")
                     return templatecontent[i:j]
+
+def buildheader(filename):
+    # load page content into an array
+    with open(htmldir + stripextension(filename) + '.html', 'r') as f:
+        pagecontent = f.readlines()
+        # pagecontent = [x.strip() for x in f.readlines()]
+        f.close()
+
+    buffer = selectcodefromtemplate(filename, "#{head}")
+    if buffer:
+        print('\t  - building header')
+        buffer.extend(pagecontent)
+
+        with open(htmldir + stripextension(filename) + '.php', 'w') as f:
+            f.write("".join(buffer))
+            f.close()
 
 
 def buildpage(filename):
+    print('\t  - building page')
     # load page content into an array
-    with open(htmldir+stripextension(filename)+'.html', 'r') as f:
+    with open(htmldir+stripextension(filename)+'.php', 'r') as f:
         pagecontent = f.readlines()
         # pagecontent = [x.strip() for x in f.readlines()]
         f.close()
@@ -74,22 +91,18 @@ def buildpage(filename):
     i_correction = 0
     for result in results:
         i = result[1] + i_correction
-        # print(i, i_correction)
         buffer = selectcodefromtemplate(filename, result[0])
-        # insert code into static page
-        # print(pagecontent[i])
-        # print(pagecontent[i].index("#"))
 
-        splitline = pagecontent[i].rstrip()
+        # insert code into static page
+        splitline = pagecontent[i]
         indicatorstr = startindicator.search(splitline).group(0)
         linestart = splitline.index(indicatorstr)
         lineend = linestart + len(indicatorstr)
         # print(linestart, lineend)
-
         pagecontent = pagecontent[:i] + [pagecontent[i][:linestart]] + buffer + [pagecontent[i][lineend:]] + pagecontent[i+1:]
         with open(htmldir + stripextension(filename) + '.php', 'w') as f:
             f.write("".join(pagecontent))
-            i_correction += len(pagecontent)-original_length
+            i_correction += len("".join(pagecontent).split('\n'))-original_length
             f.close()
 
         #refresh
@@ -118,13 +131,16 @@ for filename in pagestobuild:
     filename = stripextension(filename)+'.php'
     # iterate through target files
     if filename in os.listdir(htmldir):
-        os.remove(htmldir+'backup\\'+filename)
+        remove = any([s for s in os.listdir(htmldir+'backup') if filename in s])
+        if remove:
+            os.remove(htmldir+'backup\\'+filename)
         os.rename(htmldir+filename, htmldir+'backup\\'+filename)
 
 # list of pages that will be built from templates
 print('\n3. Building pages:')
 for page in pagestobuild:
     print('\t- '+page)
+    buildheader(page)
     buildpage(page)
 
 print('\ndone');

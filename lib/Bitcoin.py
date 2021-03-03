@@ -18,14 +18,14 @@ class bitcoinrpc:
     def __init__(self):
 
         # rpc_user and rpc_password are set in the bitcoin.conf file
-        self.rpc_connection = AuthServiceProxy("http://%s:%s@127.0.0.1:8332"%(BTC_RPC_USER, BTC_RPC_PASS))
+        self.rpc_connection = AuthServiceProxy("http://%s:%s@71.176.66.122:8332"%(BTC_RPC_USER, BTC_RPC_PASS))
 
     def createwallet(self, wallet_name):
         commands = [ ["createwallet", DATADIR+BTC_WALLET_DIR+wallet_name] ]
         create = self.rpc_connection.batch_(commands)
         print(create)
 
-    def _loadwallet(self, wallet_name):
+    def _loadwallet(self, wallet_name, wallet_password=None):
         commands = [ ["loadwallet", DATADIR+BTC_WALLET_DIR+wallet_name] ]
         load = self.rpc_connection.batch_(commands)
         print('loaded', load)
@@ -36,14 +36,14 @@ class bitcoinrpc:
         print(unload)
 
     def getbalance(self, wallet_name, minconf=0):
-        self._loadwallet(wallet_name)
+        print(self._loadwallet(wallet_name))
         commands = [ ["getbalance", "*", minconf] ]
         balance = self.rpc_connection.batch_(commands)
         self._unloadwallet(wallet_name)
         print(balance[0])
         return balance[0]
 
-    def sendtoaddress(self, tx_wallet_name, rx, amount):
+    def sendtoaddress(self, tx_wallet_name, rx, amount, wallet_password=None):
         self._loadwallet(tx_wallet_name)
         commands = [ ["sendtoaddress", rx, amount ]]
         try:

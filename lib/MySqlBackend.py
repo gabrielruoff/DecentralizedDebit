@@ -174,7 +174,7 @@ class _backend:
         wallet_name = self._getwalletname(username)
         print(wallet_name)
         # retrieve the wallet's confirmed and unconfirmed balances
-        balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 10), self.btcrpc.getunconfirmedbalance(wallet_name)
+        balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 1), self.btcrpc.getunconfirmedbalance(wallet_name)
         # update the database with these values
         if self._update('btcwallets', ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf], 'name',
                         wallet_name):
@@ -198,6 +198,8 @@ class _backend:
         for transaction in enumerate(transactions):
             print(transaction)
             transaction[1]['amount'] = str(transaction[1]['amount'])
+            if transaction[1]['category'] == 'send':
+                transaction[1]['fee'] = str(transaction[1]['fee'])
         return self._build_api_response(True, data={'transactions':transactions})
 
     ##########################################

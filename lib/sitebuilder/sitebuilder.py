@@ -156,7 +156,7 @@ for filename in os.listdir(htmldir):
 
 # list of pages that will be built from templates
 print('\n3. Building pages:')
-for page in pagestobuild:
+for page in pagestobuild[::]:
     print('\t- '+page)
     buildheader(page)
     buildpage(page)

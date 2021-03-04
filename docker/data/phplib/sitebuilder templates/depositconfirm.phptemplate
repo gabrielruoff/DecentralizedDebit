@@ -1,0 +1,104 @@
+#{head}
+<?php
+ob_implicit_flush(true);
+session_start();
+require_once('/usr/local/php/lib/Backend.php');
+use Backend\apibackend;
+use Redirect;
+$b = new apibackend();
+$sessionid = $_SESSION['sessionid'];
+$transactions = $b->listtransactions('apitest', 'btc', $sessionid)->data->transactions;
+
+//echo $_SESSION['depositconfirmpagestatus'];
+if($_SESSION['depositconfirmpagestatus'] != 'wait' && $_SESSION['depositconfirmpagestatus'] != 'show') {
+    $_SESSION['depositconfirmpagestatus'] = 'wait';
+}
+//echo $_SESSION['depositconfirmpagestatus'];
+
+//echo $_SESSION['txnow'].'/';
+//echo($transactions[0]->time);
+#exclude
+$_SESSION['txnow'] = 0;
+#/exclude
+
+function btc_displayincomingtransaction($transaction) {
+    $statuscolor = 'red';
+    $statusstring = 'Pending';
+    if($transaction->confirmations >= 10) { $statuscolor = 'green'; $statusstring = 'Confirmed'; }
+    echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; width: 400px;\">";
+    echo "<p style=\"text-align: left; padding-left: 15px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: $statuscolor\">Status: $statusstring</p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: +$transaction->amount </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Received at: $transaction->time </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>";
+    echo "</div><br>";
+}
+?>
+#{/head}
+
+#{php2}
+<?php
+if($_SESSION['depositconfirmpagestatus'] == 'show') { $depositstatus = 'Incoming Deposit:'; }
+else { $depositstatus = 'Waiting for deposit...'; }
+echo "<h2 style=\"text-align: left; padding-left: 30px;\">".$depositstatus."</h2>";
+?>
+#{/php2}
+
+#{php1}
+<?php
+        $switch = false;
+        foreach ($transactions as &$transaction) {
+            if ($transaction->category == 'receive' && floatval($transaction->time) >= $_SESSION['txnow']) {
+                print_r($transaction);
+                if($_SESSION['depositconfirmpagestatus'] == 'show') {
+                    btc_displayincomingtransaction($transaction);
+                    $switch = true;
+                } else {
+                    echo $_SESSION['depositconfirmpagestatus'];
+                    $_SESSION['depositconfirmpagestatus'] = 'show';
+                    echo $_SESSION['depositconfirmpagestatus'];
+                    ob_flush();
+                    ob_end_clean();
+                    Redirect\redirect('');
+                    exit();
+                }
+            }
+        }
+        if($_SESSION['depositconfirmpagestatus'] == 'wait') {
+            $lastrefresh = false;
+            $padding = strval((545/2)-200).'px';
+            echo "<img style=\"width: 400px; height: 400px; margin-top: $padding\" src=\"resources/animated/loading.gif\"/>";
+        }
+        ?>
+#{/php1}
+
+#{php3}
+<?php
+if($_SESSION['depositconfirmpagestatus'] == 'wait') {
+    $newaddress = $_SESSION['newaddress'];
+    echo "<div>";
+    echo "<p style=\"text-align: center; margin-left: 50px;\">Please send your deposit to this address: $newaddress</p>";
+    echo "<p style=\"text-align: center; margin-left: 50px; color: lightblue\">It may take a few minutes to receive your deposit.</p>";
+    echo "</div>";
+}
+?>
+#{/php3}
+
+#{foot}
+<?php
+        if($_SESSION['depositconfirmpagestatus'] == 'wait') {
+            ob_flush();
+            ob_end_clean();
+            sleep(15);
+            Redirect\redirect('');
+            exit();
+        }
+
+        if($switch) {
+            $_SESSION['depositconfirmpagestatus'] = 'wait';
+            echo $_SESSION['depositconfirmpagestatus'];
+        }
+
+?>
+#{/foot}

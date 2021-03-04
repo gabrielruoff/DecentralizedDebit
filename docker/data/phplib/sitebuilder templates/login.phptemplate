@@ -1,0 +1,40 @@
+#{head}
+<?php
+session_start();
+require_once('/usr/local/php/lib/Backend.php');
+
+use Backend\apibackend;
+use Redirect;
+?>
+#{/head}
+
+#{php1}
+<?php
+
+$b = new apibackend();
+
+if (isset($_POST['username'])) {
+    $b = new apibackend();
+    $username = $_POST['username'];
+    $response = $b->generatesessionid($username, $_POST['password']);
+    if ($response->success === true) {
+        // start session
+        $_SESSION['username'] = $username;
+        $_SESSION['sessionid'] = $response->data->session_id;
+
+        Redirect\redirect('Home.php');
+
+    } else {
+        $err = "incorrect credentials";
+    }
+}
+?>
+#{/php1}
+
+#{php2}
+<?php
+if(isset($err)) {
+    echo "<p style=\"text-color:red\"> $err </p>";
+}
+?>
+#{/php2}

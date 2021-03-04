@@ -1,0 +1,105 @@
+#{head}
+<?php
+session_start();
+require_once('/usr/local/php/lib/Backend.php');
+
+use Backend\apibackend;
+?>
+#{/head}
+
+#{php2}
+<?php
+if(isset($_GET['currency'])) {
+    $_SESSION['depositcurrency'] = $_GET['currency'];
+    echo "<p>Deposit into ".strtoupper($_SESSION['depositcurrency'])." wallet:</p>";
+} else {
+    echo "<p>Select a wallet to deposit into</p>";
+}
+?>
+#{/php2}
+
+#{php1}
+<?php
+$b = new apibackend();
+
+#exclude
+require_once('../Backend.php');
+$_SESSION['username'] = 'apitest';
+$password = 'test2';
+$_SESSION['sessionid'] = $b->generatesessionid($_SESSION['username'], $password)->data->session_id;
+#/exclude
+
+$username = $_SESSION['username'];
+$sessionid = $_SESSION['sessionid'];
+$currency = '*';
+$response = $b->validatesession($username, $sessionid);
+if ($response->success == false) {
+    Redirect\redirect('login.php');
+}
+$balances = $b->getbalance($username, $currency, $_SESSION['sessionid']);
+
+function make_balance_block($currency, $data)
+{
+    ?>
+    <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
+        <?php
+        $icons = '/resources/icons/';
+        echo "<img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if ($data->{$currency} != 'null') {
+            echo "<a href=\"deposit.php?currency=$currency\"><p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), 8) . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), 8)  . " </p>";
+            echo "<input type=\"radio\" name=\"r1\" value=\"p\"></a>";
+        } else {
+            echo "<p> No " . strtoupper($currency) . " Wallet </p>";
+        }
+        ?>
+    </div>
+    <br>
+    <span class="stretch"></span>
+<?php } ?>
+
+<?php
+// make a block displaying balance data for each wallet
+foreach ($balances->data as $key => $value) {
+    if($value != 'null') {
+        make_balance_block($key, $balances->data);
+    }
+}
+?>
+#{/php1}
+
+#{php3}
+<?php
+if (isset($_GET['submit'])) {
+    $b = new apibackend();
+    $username = $_SESSION['username'];
+    $response = $b->validatesession($username, $sessionid);
+    if ($response->success == true) {
+        // generate a new deposit address
+        if(isset($_SESSION['depositcurrency'])) {
+            $deposit_address = $b->getnewaddress($_SESSION['depositcurrency'], $username, $sessionid);
+            if($deposit_address->success == true) {
+                $_SESSION['newaddress'] = $deposit_address->data->newaddress;
+                $_SESSION['txnow'] = time();
+                $_SESSION['depositstatus'] = 'Waiting for deposit...';
+                $url = 'depositconfirm.php';
+                \Redirect\redirect($url);
+            }
+        } else {
+            $err = "No currency selected";
+        }
+
+    } else {
+        $err = "invalid session";}
+}
+?>
+#{/php3}
+
+#{php4}
+<?php
+if(isset($err)) {
+    echo "<p style=\"text-color:red\"> $err </p>";
+}
+?>
+#{/php4}

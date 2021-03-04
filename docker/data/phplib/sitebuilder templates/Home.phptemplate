@@ -1,0 +1,58 @@
+#{head}
+<?php
+session_start();
+require_once('/usr/local/php/lib/Backend.php');
+
+use Backend\apibackend;
+?>
+#{/head}
+
+#{php1}
+<?php
+$username = $_SESSION['username'];
+echo "<h1> Welcome, $username </h1>";
+?>
+#{/php1}
+
+#{php2}
+<?php
+$b = new apibackend();
+
+#exclude
+require_once('../Backend.php');
+$_SESSION['username'] = 'apitest';
+$password = 'test2';
+$_SESSION['sessionid'] = $b->generatesessionid($_SESSION['username'], $password)->data->session_id;
+#/exclude
+
+$currency = '*';
+$balances = $b->getbalance($username, $currency, $_SESSION['sessionid']);
+
+function make_balance_block($currency, $data)
+{
+    ?>
+    <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
+        <?php
+        $icons = '/resources/icons/';
+        echo "<a href=\"wallet.php?currency=$currency\">";
+        echo "<img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if ($data->{$currency} != 'null') {
+            echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), 8) . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), 8)  . " </p>";
+            echo "</a>";
+        } else {
+            echo "<p> No " . strtoupper($currency) . " Wallet </p>";
+        }
+        ?>
+    </div>
+    <br>
+    <span class="stretch"></span>
+<?php }
+
+// make a block displaying balance data for each wallet
+foreach ($balances->data as $key => $value) {
+    make_balance_block($key, $balances->data);
+}
+?>
+#{/php2}

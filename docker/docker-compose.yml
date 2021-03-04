@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+    nginx:
+      build: nginx/
+      links:
+        - php-fpm
+        - mysql
+      ports:
+        - "80:80"
+      volumes:
+        - ./data/www:/var/www/:ro
+    php-fpm:
+      build: php-fpm/
+      volumes:
+        - ./data/www:/var/www/
+        - ./data/phplib:/usr/local/php/lib
+      links:
+        - mysql
+    mysql:
+      build: mysql/
+      volumes:
+        - ./mysql/mysql:/var/lib/mysql
+      cap_add:
+        - SYS_NICE  # CAP_SYS_NICE
+    #bitcoind:
+     # build: bitcoind/
+      #volumes:
+       # - ./bitcoind/dot_bitcoin:/root/.bitcoin
+        # - ../data/:/data/
+    api:
+      build: api/
+      volumes:
+        - ./api/lib/:/api/lib/
+        - ./data/apidata:/api/data
+      links:
+        - mysql
+#        - bitcoind
+      ports:
+        - "5000:5000"

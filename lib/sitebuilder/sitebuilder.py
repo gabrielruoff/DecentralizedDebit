@@ -66,6 +66,23 @@ def buildheader(filename):
             f.close()
 
 
+def buildfooter(filename):
+    # load page content into an array
+    with open(htmldir + stripextension(filename) + '.php', 'r') as f:
+        pagecontent = f.readlines()
+        # pagecontent = [x.strip() for x in f.readlines()]
+        f.close()
+
+    buffer = selectcodefromtemplate(filename, "#{foot}")
+    if buffer:
+        print('\t  - building footer')
+        pagecontent.extend(buffer)
+
+        with open(htmldir + stripextension(filename) + '.php', 'w') as f:
+            f.write("".join(pagecontent))
+            f.close()
+
+
 def buildpage(filename):
     print('\t  - building page')
     # load page content into an array
@@ -74,7 +91,7 @@ def buildpage(filename):
         # pagecontent = [x.strip() for x in f.readlines()]
         f.close()
 
-    original_length = len(pagecontent)
+    original_length = len("".join(pagecontent).split('\n'))
 
     # iterate throught the page contents
     results = []
@@ -88,9 +105,10 @@ def buildpage(filename):
 
     # look for this indicator in the html file and move php code into buffer
     # print(results)
-    i_correction = 0
     for result in results:
-        i = result[1] + i_correction
+        for i, line in enumerate(pagecontent):
+            if result[0] in line:
+                break
         buffer = selectcodefromtemplate(filename, result[0])
 
         # insert code into static page
@@ -102,7 +120,6 @@ def buildpage(filename):
         pagecontent = pagecontent[:i] + [pagecontent[i][:linestart]] + buffer + [pagecontent[i][lineend:]] + pagecontent[i+1:]
         with open(htmldir + stripextension(filename) + '.php', 'w') as f:
             f.write("".join(pagecontent))
-            i_correction += len("".join(pagecontent).split('\n'))-original_length
             f.close()
 
         #refresh
@@ -126,15 +143,16 @@ for filename in os.listdir(htmldir):
         continue
 
 # back up old php files
-print('2. Backing up old php files')
-for filename in pagestobuild:
-    filename = stripextension(filename)+'.php'
-    # iterate through target files
-    if filename in os.listdir(htmldir):
-        remove = any([s for s in os.listdir(htmldir+'backup') if filename in s])
-        if remove:
-            os.remove(htmldir+'backup\\'+filename)
-        os.rename(htmldir+filename, htmldir+'backup\\'+filename)
+# print('\n2. Backing up old php files')
+# for filename in pagestobuild:
+#     filename = stripextension(filename)+'.php'
+#     # iterate through target files
+#     if filename in os.listdir(htmldir):
+#         remove = any([s for s in os.listdir(htmldir+'backup') if filename in s])
+#         if remove:
+#             os.remove(htmldir+'backup\\'+filename)
+#         os.rename(htmldir+filename, htmldir+'backup\\'+filename)
+# print('\t- done')
 
 # list of pages that will be built from templates
 print('\n3. Building pages:')
@@ -142,5 +160,6 @@ for page in pagestobuild:
     print('\t- '+page)
     buildheader(page)
     buildpage(page)
+    buildfooter(page)
 
-print('\ndone');
+print('\n4. done');

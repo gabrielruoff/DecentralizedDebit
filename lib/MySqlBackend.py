@@ -108,7 +108,10 @@ class _backend:
         # unfinished
 
     def _validate_session(self, session_id):
-        expire_at = self._select(MYSQL_TAB_SESSIONS, 'session_id', session_id, selection='expire_at')[0][0]
+        try:
+            expire_at = self._select(MYSQL_TAB_SESSIONS, 'session_id', session_id, selection='expire_at')[0][0]
+        except Exception as e:
+            return False
         print(expire_at)
         return expire_at > datetime.now()
 
@@ -163,15 +166,15 @@ class _backend:
             # update user account data
             if self._update(MYSQL_TAB_USERS, ['wallet_btc'], [True], 'username', username):
                 print('updated user account')
-                return self._build_api_response('True')
-        return self._build_api_response('False', err='genericapierror')
+                return self._build_api_response(True)
+        return self._build_api_response(False, err='genericapierror')
 
     def _update_balance_btc(self, username):
         # get the wallet name
         wallet_name = self._getwalletname(username)
         print(wallet_name)
         # retrieve the wallet's confirmed and unconfirmed balances
-        balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 10), self.btcrpc.getbalance(wallet_name)
+        balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 10), self.btcrpc.getunconfirmedbalance(wallet_name)
         # update the database with these values
         if self._update('btcwallets', ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf], 'name',
                         wallet_name):
@@ -184,10 +187,18 @@ class _backend:
         # get the new address
         new_address = self.btcrpc.getnewaddress(wallet_name)
         if not new_address:
-            return self._build_api_response('False', err='generic')
+            return self._build_api_response(False, err='generic')
         # this function is special because in certain cases we want the raw address returned.
         # The api handler converts this output into a boolean
         return new_address
+
+    def _list_transactions_btc(self, username):
+        wallet_name = self._getwalletname(username)
+        transactions = self.btcrpc.listtransactions(wallet_name)[0]
+        for transaction in enumerate(transactions):
+            print(transaction)
+            transaction[1]['amount'] = str(transaction[1]['amount'])
+        return self._build_api_response(True, data={'transactions':transactions})
 
     ##########################################
     #         TRANSACTION FUNCTIONS          #

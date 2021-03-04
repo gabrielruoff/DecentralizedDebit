@@ -50,9 +50,9 @@ class Wallet(Resource):
         # get request method and body
         method, body = content['method'], content['body']
         # METHODS
-        # getbalance: url /Wallet/<username>/<currency> { method: getbalance } body = { password }
+        # getbalance: url /Wallet/<username>/<currency> { method: getbalance } body = { session_id }
         # - currency = '*' returns balance of all open wallets under this account
-        # getnewaddress: url /Wallet/<username>/<currency> { method: getnewaddress } body = { password }
+        # getnewaddress: url /Wallet/<username>/<currency> { method: getnewaddress } body = { session_id }
         with wallet() as w:
             func = getattr(w, method)
             print(func)

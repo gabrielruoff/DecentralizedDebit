@@ -17,7 +17,7 @@ class accounts:
         print(data)
         with _backend() as b:
             print(data['merchant'])
-            return b._create_account(data['username'], data['password'], merchant=eval(data['merchant']))
+            return b._create_account(data['username'], data['password'], merchant=(data['merchant']))
 
     def becomemerchant(self, data):
         # validate credentials
@@ -37,7 +37,7 @@ class account():
         # validate credentials
         with _backend() as b:
             if b._validate_user_credentials(username, data['password']):
-                return b._build_api_response('True')
+                return b._build_api_response(True)
             return b._build_api_response(False, 'incorrectcredientals')
 
     def generatesessionid(self, username, data):
@@ -102,17 +102,26 @@ class wallet():
             return b._build_api_response(False, 'invaildsessionid')
 
 
-
     def getnewaddress(self, username, currency, data):
         # validate credentials
         with _backend() as b:
-            print(username, data['password'])
-            if b._validate_user_credentials(username, data['password']):
+            print(username, data['session_id'])
+            if b._validate_session(data['session_id']):
                 func = getattr(b, ('_get_new_address_'+currency))
                 # btc addresses, which this function returns upon success, are 42 characters
-                if len(func(username)) == 42:
-                    return b._build_api_response('True')
-            return b._build_api_response(False, 'incorrectcredientals')
+                newaddress = func(username)
+                if len(newaddress) == 42:
+                    return b._build_api_response(True, data={'newaddress':newaddress})
+            return b._build_api_response(False, 'invaildsessionid')
+
+    def listtransactions(self, username, currency, data):
+        # validate credentials
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                func = getattr(b, '_list_transactions_'+currency)
+                return func(username)
+            return b._build_api_response(False, 'invalidsessionsid')
+
 
 class merchant():
     def __enter__(self):

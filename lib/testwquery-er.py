@@ -16,9 +16,9 @@ r = requests.post(url, data=json.dumps(data), headers=headers)
 session_id = r.json()['data']['session_id']
 print(session_id)
 
-url = pc+"/Account/apitest"
-data = {'method':'validatesession', 'body':{'session_id': session_id}}
-headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+# url = pc+"/Account/apitest"
+# data = {'method':'validatesession', 'body':{'session_id': session_id}}
+# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
 # url = pc+"/Account/apitest"
 # data = {'method':'destroysession', 'body':{'session_id': session_id}}
@@ -36,8 +36,8 @@ url = pc+"/Wallet/apitest/*"
 data = {'method':'getbalance', 'body':{'session_id':session_id}}
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
-# url = "http://localhost:5000/Wallet/apitest/btc"
-# data = {'method':'getnewaddress', 'body':{'password':'test2'}}
+# url =pc+"/Wallet/apitest/btc"
+# data = {'method':'getnewaddress', 'body':{'session_id':session_id}}
 # headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 # build a transaction from this data. Encrypt to server masterkey
 

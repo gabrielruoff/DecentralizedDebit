@@ -15,3 +15,4 @@ To work on this repo:
 
 
 Gabriel Ruoff, geruoff@syr.edu
+gabrielruoff.com

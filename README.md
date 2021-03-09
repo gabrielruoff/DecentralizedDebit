@@ -1,6 +1,6 @@
 # DecentralizedDebit
 
-A secure and anonymous cryptocurrency payment processor and point-of-sale system.
+A secure and anonymous cryptocurrency payment processor and physical point-of-sale system.
 
 To work on this repo:
   1. Edit DATADIR environment variable in .env to point to the repo's path

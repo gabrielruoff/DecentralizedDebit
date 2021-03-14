@@ -63,6 +63,7 @@ class Merchant(Resource):
 
     def post(self, username):
         content = request.get_json()
+        origin = request.remote_addr
         # get request method and body
         method, body = content['method'], content['body']
         # METHODS
@@ -70,7 +71,7 @@ class Merchant(Resource):
         with merchant() as w:
             func = getattr(w, method)
             print(func)
-            return func(username, body)
+            return func(username, body, origin)
 
 # helper function to return usage cases
 # def usage(examples):

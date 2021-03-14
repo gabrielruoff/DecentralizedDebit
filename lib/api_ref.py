@@ -129,7 +129,7 @@ class merchant():
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def submittransaction(self, username, data):
+    def submittransaction(self, username, data, origin):
         # validate credentials
         with _backend() as b:
             if b._validate_session(data['session_id']):
@@ -137,4 +137,30 @@ class merchant():
                                                          data['password'], username)
                 tx.decrypt(b._get_master_priv_keyfile(), b._get_master_key_pass())
                 return b.process_transaction(tx)
+            return b._build_api_response(False, 'invaildsessionid')
+
+    def submittokendeposit(self, username, data, origin):
+        # validate credentials
+        print(origin)
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                if b._validate_trusted_ip(origin):
+                    tx = data['tx']
+                    return b._confirm_token_deposit(username, tx)
+                return b._build_api_response(False, 'invalid origin ip')
+            return b._build_api_response(False, 'invaildsessionid')
+
+    def submittokenwithdrawl(self, username, data, origin):
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                destination = data['destination']
+                amount = data['amount']
+                return b._confirm_token_withdrawl(username, amount, destination)
+            return b._build_api_response(False, 'invaildsessionid')
+
+    def gettokentransaction(self, username, data, origin):
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                txid = data['txid']
+                return b._get_token_transaction_by_txid(txid)
             return b._build_api_response(False, 'invaildsessionid')

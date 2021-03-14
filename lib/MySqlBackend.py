@@ -1,13 +1,12 @@
 # Gabriel Ruoff, geruoff@syr.edu
 # Backend class to handle low-level database calls as well as database and wallet helper functions
-import binascii
-import uuid
+import uuid, os, json, binascii
 from datetime import datetime, timedelta
 import mysql.connector
 from dotenv import load_dotenv
-import os
 from hashlib import sha224
-import Bitcoin, Crypt, Monero, Transaction
+# local classes
+import Bitcoin, Crypt, Monero, Token, Transaction, Payouts, paypal_client
 
 # load .env
 load_dotenv()
@@ -24,12 +23,15 @@ MYSQL_TAB_USERS = os.environ.get("MYSQL_TAB_USERS")
 MYSQL_TAB_SESSIONS = os.environ.get("MYSQL_TAB_SESSIONS")
 MYSQL_TAB_BTCWALLETS = os.environ.get("MYSQL_TAB_BTCWALLETS")
 MYSQL_TAB_XMRWALLETS = os.environ.get("MYSQL_TAB_XMRWALLETS")
+MYSQL_TAB_TOKWALLETS = os.environ.get("MYSQL_TAB_TOKWALLETS")
+MYSQL_TAB_TOKTRANSACTIONS = os.environ.get("MYSQL_TAB_TOKTRANSACTIONS")
 KEY_PRIV_SUFFIX = os.environ.get("KEY_PRIV_SUFFIX")
 KEY_PUB_SUFFIX = os.environ.get("KEY_PUB_SUFFIX")
 MYSQL_TAB_TX_BLOCKCHAIN = os.environ.get("MYSQL_TAB_TX_BLOCKCHAIN")
 MASTER_KEY_DIR = os.environ.get("MASTER_KEY_DIR")
 MASTER_KEY_PREF = os.environ.get("MASTER_KEY_PREF")
 MASTER_KEY_PASS = os.environ.get("MASTER_KEY_PASS")
+
 
 class _backend:
     def __init__(self):
@@ -94,15 +96,18 @@ class _backend:
     def _destroy_session(self, session_id=None, username=None):
         if username is None:
             print('here')
-            destroyquery = self._raw_query("DELETE FROM %s WHERE session_id='%s'" % (MYSQL_DB+'.'+MYSQL_TAB_SESSIONS, session_id))
+            destroyquery = self._raw_query(
+                "DELETE FROM %s WHERE session_id='%s'" % (MYSQL_DB + '.' + MYSQL_TAB_SESSIONS, session_id))
         else:
-            destroyquery = self._raw_query("DELETE FROM %s WHERE username='%s'" % (MYSQL_DB+'.'+MYSQL_TAB_SESSIONS, username))
+            destroyquery = self._raw_query(
+                "DELETE FROM %s WHERE username='%s'" % (MYSQL_DB + '.' + MYSQL_TAB_SESSIONS, username))
         if destroyquery:
             return self._build_api_response(True)
         return self._build_api_response(False, err='genericapierror')
 
     def _update_session(self, session_id):
-        if self._update(MYSQL_TAB_SESSIONS, ['expire_at'], datetime.now()+timedelta(minutes=60), 'session_id', session_id):
+        if self._update(MYSQL_TAB_SESSIONS, ['expire_at'], datetime.now() + timedelta(minutes=60), 'session_id',
+                        session_id):
             return self._build_api_response('True')
         return self._build_api_response('False', err='genericapierror')
         # unfinished
@@ -128,22 +133,47 @@ class _backend:
 
     def _list_supported_currencies(self):
         # get a list of supported currencies
-        currencies = self._raw_query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_NAME='users' and ORDINAL_POSITION>4")
-        currencies = [i[0].split('wallet_')[1] for i in currencies]
+        currencies = self._raw_query("SELECT ticker from accounts.supported_currencies")
+        # currencies = [i[0].split('wallet_')[1] for i in currencies]
         return currencies
 
     def update_balance_all(self, username):
         # update balance for each wallet that the user holds and add to array
         balances = {}
-        wallets = self._list_account_wallets(username)
         currencies = self._list_supported_currencies()
-        for i, w in enumerate(wallets):
-            if w == 1:
-                func = getattr(self, '_update_balance_'+currencies[i])
-                balances[currencies[i]] = func(username)['data']
+        wallets = self._list_account_wallets(username)
+        print(wallets)
+        print(currencies)
+        for i, wallet in enumerate(wallets):
+            if wallet == 1:
+                func = getattr(self, '_update_balance_' + currencies[i][0].lower())
+                balances[currencies[i][0].lower()] = func(username)['data']
             else:
-                balances[currencies[i]] = 'null'
+                balances[currencies[i][0].lower()] = 'null'
+        print(balances)
         return balances
+
+    ##########################################
+    #            TOKEN FUNCTIONS             #
+    ##########################################
+
+    def _update_balance_tok(self, username):
+        # retrieve the users' token balance
+        tokbalance = self._select(MYSQL_TAB_TOKWALLETS, 'name', username, selection="balance_conf")[0]
+        if tokbalance:
+            print(tokbalance[0])
+            return self._build_api_response(True, data={'balance_conf': str(tokbalance[0]), 'balance_unconf': str(0)})
+        return self._build_api_response(False, err='genericapierror')
+
+    def _modify_tok_balance(self, username, amount, increase=True):
+        # retrieve the users' token balance
+        tokbalance = self._select(MYSQL_TAB_TOKWALLETS, 'name', username, selection="balance_conf")[0][0]
+        if increase:
+            tokbalance += float(amount)
+        else:
+            tokbalance -= float(amount)
+        # update it to the new value
+        return self._update(MYSQL_TAB_TOKWALLETS, ['balance_conf'], [tokbalance], 'name', username)
 
     ##########################################
     #           BITCOIN FUNCTIONS            #
@@ -158,7 +188,7 @@ class _backend:
             self.btcrpc._unloadwallet(wallet_name)
         else:
             print('this wallet already exists')
-            return self._build_api_response('false', 'walletexists')
+            return self._build_api_response(False, 'walletexists')
         # insert new wallet data into database - set balances to 0
         if self._insert(MYSQL_TAB_BTCWALLETS, ['name', 'KEY_DIR', 'BALANCE_CONF', 'BALANCE_UNCONF'],
                         [wallet_name, (DATADIR + BTC_WALLET_DIR + wallet_name).replace('\\', '\\\\'), 0, 0]):
@@ -174,12 +204,15 @@ class _backend:
         wallet_name = self._getwalletname(username)
         print(wallet_name)
         # retrieve the wallet's confirmed and unconfirmed balances
-        balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 1), self.btcrpc.getunconfirmedbalance(wallet_name)
+        balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 1), self.btcrpc.getunconfirmedbalance(
+            wallet_name)
         # update the database with these values
-        if self._update('btcwallets', ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf], 'name',
+        if self._update(MYSQL_TAB_BTCWALLETS, ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf],
+                        'name',
                         wallet_name):
-            return self._build_api_response('True', data={'balance_conf':str(balance_conf), 'balance_unconf':str(balance_unconf)})
-        return self._build_api_response('False', err='genericapierror')
+            return self._build_api_response(True, data={'balance_conf': str(balance_conf),
+                                                        'balance_unconf': str(balance_unconf)})
+        return self._build_api_response(False, err='genericapierror')
 
     def _get_new_address_btc(self, username):
         # get the wallet name
@@ -200,7 +233,7 @@ class _backend:
             transaction[1]['amount'] = str(transaction[1]['amount'])
             if transaction[1]['category'] == 'send':
                 transaction[1]['fee'] = str(transaction[1]['fee'])
-        return self._build_api_response(True, data={'transactions':transactions})
+        return self._build_api_response(True, data={'transactions': transactions})
 
     ##########################################
     #         TRANSACTION FUNCTIONS          #
@@ -214,7 +247,8 @@ class _backend:
         # check that this transaction is not a duplicate
         if self._check_transaction_is_original(tx):
             print(tx.rx_account_id_decrypt)
-            txwallet, rxwallet = self._getwalletname(tx.tx_account_id_decrypt), self._getwalletname(tx.rx_account_id_decrypt)
+            txwallet, rxwallet = self._getwalletname(tx.tx_account_id_decrypt), self._getwalletname(
+                tx.rx_account_id_decrypt)
             amount, currency = tx.amount_decrypt, tx.currency_decrypt
 
             # select a coin backend depending on the currency in question
@@ -222,6 +256,8 @@ class _backend:
                 coin_backend = Bitcoin.bitcoinrpc()
             elif currency.lower() == 'xmr':
                 coin_backend = Monero.monerorpc()
+            elif currency.lower() == 'tok':
+                coin_backend = Token.token()
 
             # make a new receiving address
             new_rx_address = coin_backend.getnewaddress(rxwallet)
@@ -246,17 +282,77 @@ class _backend:
     def _check_transaction_is_original(self, tx):
         print(sha224(binascii.unhexlify(tx.signed_hash)).hexdigest())
         # print(self._select(MYSQL_TAB_TX_BLOCKCHAIN, 'hash', sha224(binascii.unhexlify(tx.signed_hash).hexdigest(), selection='block_id')))
-        return not self._select(MYSQL_TAB_TX_BLOCKCHAIN, 'hash', sha224(binascii.unhexlify(tx.signed_hash)).hexdigest(), selection='block_id')
+        return not self._select(MYSQL_TAB_TX_BLOCKCHAIN, 'hash', sha224(binascii.unhexlify(tx.signed_hash)).hexdigest(),
+                                selection='block_id')
 
     def _add_transaction_to_blockchain(self, tx):
         # get required data
         block_id = self._raw_query("SELECT COUNT(block_id) FROM " + MYSQL_DB + "." + MYSQL_TAB_TX_BLOCKCHAIN)[0][0] + 1
         prev_hash = self._raw_query(
-            "SELECT hash, block_id FROM " + MYSQL_DB + "." + MYSQL_TAB_TX_BLOCKCHAIN + " ORDER BY block_id DESC LIMIT 1")[0]
-        prev_hash = sha224(prev_hash[0]+prev_hash[1])
+            "SELECT hash, block_id FROM " + MYSQL_DB + "." + MYSQL_TAB_TX_BLOCKCHAIN + " ORDER BY block_id DESC LIMIT 1")[
+            0]
+        prev_hash = sha224(prev_hash[0] + prev_hash[1])
         print(prev_hash)
         this_hash = sha224(binascii.unhexlify(tx.signed_hash).hexdigest())
-        return self._insert(MYSQL_TAB_TX_BLOCKCHAIN, ['prev_hash', 'block_id', 'hash'], [prev_hash, block_id, this_hash])
+        return self._insert(MYSQL_TAB_TX_BLOCKCHAIN, ['prev_hash', 'block_id', 'hash'],
+                            [prev_hash, block_id, this_hash])
+
+    def _confirm_token_deposit(self, username, tx):
+        print(tx)
+        txid = tx['id']
+        status = tx['status']
+        payer = tx['payer']['email_address']
+        payer_id = tx['payer']['payer_id']
+        country_code = tx['purchase_units'][0]['shipping']['address']['country_code']
+        postal_code = tx['purchase_units'][0]['shipping']['address']['postal_code']
+        name = tx['payer']['name']['given_name'] + ' ' + tx['payer']['name']['surname']
+        currency_code = tx['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code']
+        amount = tx['purchase_units'][0]['payments']['captures'][0]['amount']['value']
+        final_capture = tx['purchase_units'][0]['payments']['captures'][0]['final_capture']
+        create_time = tx['purchase_units'][0]['payments']['captures'][0]['create_time']
+
+        create_time = datetime.strptime(create_time, "%Y-%m-%dT%H:%M:%SZ")
+
+        if not self._select(MYSQL_TAB_TOKTRANSACTIONS, 'txid', txid, selection='status'):
+            if self._insert(MYSQL_TAB_TOKTRANSACTIONS,
+                            ['txid', 'status', 'payer', 'payer_id', 'country_code', 'postal_code', 'name',
+                             'currency_code', 'amount', 'final_capture', 'create_time'],
+                            [txid, status, payer, payer_id, country_code, postal_code, name, currency_code, amount,
+                             final_capture, create_time]):
+                if self._modify_tok_balance(username, amount, True):
+                    return self._build_api_response(True)
+        return self._build_api_response(False, err='duplicate paypal transaction')
+        # verify that this transaction id is valid
+        # verify that this transaction id has not already been processed
+
+    def _get_token_transaction_by_txid(self, txid):
+        tx = list(self._select(MYSQL_TAB_TOKTRANSACTIONS, 'txid', txid)[0])
+        tx[-1] = datetime.strftime(tx[-1], "%Y-%m-%d %H:%M:%S")
+        print(tx)
+        if tx:
+            return self._build_api_response(True, data={'tx': tx})
+        return self._build_api_response(False, err='no match for transaction ' + txid)
+
+    # destination is a paypal email
+    def _confirm_token_withdrawl(self, username, amount, destination):
+        # make sure the user has enough tokens
+        if float(self._update_balance_tok(username)['data']['balance_conf']) > amount:
+            # process the payout
+            if Payouts.CreatePayouts().create_payout(destination, amount):
+                # modify the user's token balance
+                # false indicates to subtract balance
+                if self._modify_tok_balance(username, amount, False):
+                    # add to token transactions
+                    txid = uuid.uuid4()
+                    currency_code = 'USD'
+                    create_time = datetime.now()
+                    payer = 'system'
+                    if self._insert(MYSQL_TAB_TOKTRANSACTIONS, ['txid', 'status', 'payer', 'currency_code', 'amount', 'create_time'],
+                                    [txid, 'COMPLETED', payer, currency_code, amount, create_time]):
+                        return self._build_api_response(True)
+                return self._build_api_response(False, err='genericapierror')
+            return self._build_api_response(False, err='paypalpayouterror')
+        return self._build_api_response(False, err='insufficientbalance')
 
     ##########################################
     #           HELPER FUNCTIONS            #
@@ -269,11 +365,17 @@ class _backend:
         response['err'] = err
         return response
 
+    def _validate_trusted_ip(self, ip):
+        valid_ips = '192.168.1.2:127.0.0.1:45.61.54.203'
+        print(ip in valid_ips)
+        return ip in valid_ips
+
     def _validate_user_credentials(self, username, password):
         passwd = sha224(username.encode('utf-8') + password.encode('utf-8')).hexdigest()
         try:
             print(passwd, self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0])
-            return self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][0].strip() == passwd.strip()
+            return self._select(MYSQL_TAB_USERS, 'username', username, selection='passwd')[0][
+                       0].strip() == passwd.strip()
         except IndexError:
             return False
 
@@ -290,7 +392,7 @@ class _backend:
         return key_file_path.split('\\')[-2]
 
     def _get_master_priv_keyfile(self):
-        return DATADIR+MASTER_KEY_DIR+MASTER_KEY_PREF+KEY_PRIV_SUFFIX
+        return DATADIR + MASTER_KEY_DIR + MASTER_KEY_PREF + KEY_PRIV_SUFFIX
 
     def _get_master_key_pass(self):
         return MASTER_KEY_PASS
@@ -314,7 +416,7 @@ class _backend:
 
     def _insert(self, table, fields, data, suffix=""):
         q = "INSERT INTO %s (" + ("%s, " * (len(fields) - 1)) + "%s) VALUES (" + (
-                    "'%s', " * (len(data) - 1)) + "'%s') " + suffix
+                "'%s', " * (len(data) - 1)) + "'%s') " + suffix
         d = (MYSQL_DB + '.' + table, *fields, *data)
         print(q % d)
         cursor = self.cnx.cursor()
@@ -343,6 +445,7 @@ class _backend:
     def _raw_query(self, q):
         cursor = self.cnx.cursor()
         cursor.execute(q)
+        print(q)
         if "SELECT" in q.upper():
             ret = cursor.fetchall()
         elif "INSERT" in q.upper() or "DELETE" in q.upper():

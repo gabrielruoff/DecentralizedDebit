@@ -32,9 +32,21 @@ print(session_id)
 # data = {'method':'becomemerchant', 'body':{'username':'merchant', 'password':'test2'}}
 # headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
-url = pc+"/Wallet/apitest/*"
-data = {'method':'getbalance', 'body':{'session_id':session_id}}
+# url = pc+"/Wallet/apitest/*"
+# data = {'method':'getbalance', 'body':{'session_id':session_id}}
+# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+# url = pc+"/Merchant/apitest"
+# data = {'method':'submittokendeposit', 'body':{'session_id':session_id, 'tx': {'create_time':'2021-03-10T23:31:43Z','update_time':'2021-03-10T23:31:53Z','id':'8UT64064Y1885783P','intent':'CAPTURE','status':'COMPLETED','payer':{'email_address':'sb-yttsx5369489@personal.example.com','payer_id':'DSYBPTKZKHK6L','address':{'address_line_1':'1 Main St','admin_area_2':'San Jose','admin_area_1':'CA','postal_code':'95131','country_code':'US'},'name':{'given_name':'John','surname':'Doe'},'phone':{'phone_number':{'national_number':'4083753851'}}},'purchase_units':[{'description':'Token Deposit','reference_id':'default','amount':{'value':'600.00','currency_code':'USD'},'payee':{'email_address':'barco.03-facilitator@gmail.com','merchant_id':'YQZCHTGHUK5P8'},'shipping':{'name':{'full_name':'John Doe'},'address':{'address_line_1':'1 Main St','admin_area_2':'San Jose','admin_area_1':'CA','postal_code':'95131','country_code':'US'}},'payments':{'captures':[{'status':'COMPLETED','id':'5JS73574N9053032X','final_capture':'true','create_time':'2021-03-10T23:31:53Z','update_time':'2021-03-10T23:31:53Z','amount':{'value':'600.00','currency_code':'USD'},'seller_protection':{'status':'ELIGIBLE','dispute_categories':['ITEM_NOT_RECEIVED','UNAUTHORIZED_TRANSACTION']},'links':[{'href':'https://api.sandbox.paypal.com/v2/payments/captures/5JS73574N9053032X','rel':'self','method':'GET','title':'GET'},{'href':'https://api.sandbox.paypal.com/v2/payments/captures/5JS73574N9053032X/refund','rel':'refund','method':'POST','title':'POST'},{'href':'https://api.sandbox.paypal.com/v2/checkout/orders/8UT64064Y1885783P','rel':'up','method':'GET','title':'GET'}]}]}}],'links':[{'href':'https://api.sandbox.paypal.com/v2/checkout/orders/8UT64064Y1885783P','rel':'self','method':'GET','title':'GET'}]}}}
+# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+url = pc+"/Merchant/apitest"
+data = {'method':'submittokenwithdrawl', 'body':{'session_id':session_id, 'amount': 50000, 'destination': 'sb-yttsx5369489@personal.example.com'}}
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+# url =pc+"/Wallet/apitest/tok"
+# data = {'method':'sendtoaddress', 'body':{'session_id':session_id}}
+# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
 # url =pc+"/Wallet/apitest/btc"
 # data = {'method':'getnewaddress', 'body':{'session_id':session_id}}

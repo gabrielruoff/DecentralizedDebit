@@ -5,4 +5,4 @@ w.sethtmldir('X:\\docker\\data\\www\\html\\')
 w.settemplatedir('X:\\docker\\data\\phplib\\sitebuilder templates\\')
 w.setbackupdir('backup')
 
-w.build(backup=True)
+w.build(backup=False)

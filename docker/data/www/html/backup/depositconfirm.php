@@ -1,5 +1,6 @@
 <!-- #!{head} -->
 <?php
+ob_implicit_flush(true);
 session_start();
 require_once('/usr/local/php/lib/Backend.php');
 use Backend\apibackend;
@@ -7,25 +8,27 @@ use Redirect;
 $b = new apibackend();
 $sessionid = $_SESSION['sessionid'];
 $transactions = $b->listtransactions('apitest', 'btc', $sessionid)->data->transactions;
-//if(!isset($_SESSION['txnow'])) {
-//    $_SESSION['txnow'] = time();
-//}
-// refresh the page until a new transaction is found
-//print_r($transactions);
-echo $_SESSION['txnow'].'/';
-echo($transactions[0]->time);
-$_SESSION['txnow'] = 0;
 
-function displayincomingtransaction($transaction) {
+//echo $_SESSION['depositconfirmpagestatus'];
+if($_SESSION['depositconfirmpagestatus'] != 'wait' && $_SESSION['depositconfirmpagestatus'] != 'show') {
+    $_SESSION['depositconfirmpagestatus'] = 'wait';
+}
+//echo $_SESSION['depositconfirmpagestatus'];
+
+//echo $_SESSION['txnow'].'/';
+//echo($transactions[0]->time);
+
+function btc_displayincomingtransaction($transaction) {
     $statuscolor = 'red';
     $statusstring = 'Pending';
     if($transaction->confirmations >= 10) { $statuscolor = 'green'; $statusstring = 'Confirmed'; }
     echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; width: 400px;\">";
-    echo "<p style=\"text-align: left; padding-left: 10px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
-    echo "<p style=\"text-align: left; padding-left: 20px; color: $statuscolor\">Status: $statusstring</p>";
-    echo "<p style=\"text-align: left; padding-left: 20px; color: gray\">- Amount: +$transaction->amount </p>";
-    echo "<p style=\"text-align: left; padding-left: 20px; color: gray\">- Received at: $transaction->time </p>";
-    echo "<p style=\"text-align: left; padding-left: 20px; color: gray\">- Confirmations: $transaction->confirmations </p>";
+    echo "<p style=\"text-align: left; padding-left: 15px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: $statuscolor\">Status: $statusstring</p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: +$transaction->amount </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Received at: $transaction->time </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>";
     echo "</div><br>";
 }
 ?>
@@ -72,9 +75,7 @@ function displayincomingtransaction($transaction) {
             <ul class="u-nav u-unstyled u-nav-1"><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="index.html" style="padding: 10px 20px;">Home</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="About.html" style="padding: 10px 20px;">About</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="login.html" style="padding: 10px 20px;">Login</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="deposit.html" style="padding: 10px 20px;">Deposit</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="" style="padding: 10px 20px;">depositconfirm</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
 </li></ul>
           </div>
           <div class="u-custom-menu u-nav-container-collapse">
@@ -84,8 +85,7 @@ function displayincomingtransaction($transaction) {
                 <ul class="u-align-center u-nav u-popupmenu-items u-unstyled u-nav-2"><li class="u-nav-item"><a class="u-button-style u-nav-link" href="index.html" style="padding: 10px 20px;">Home</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="About.html" style="padding: 10px 20px;">About</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="login.html" style="padding: 10px 20px;">Login</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.html" style="padding: 10px 20px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
 </li></ul>
               </div>
             </div>
@@ -96,17 +96,50 @@ function displayincomingtransaction($transaction) {
         <a href="register.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-6 u-btn-2">Get Started</a>
       </div></header>
     <section class="u-clearfix u-section-1" id="sec-d1e0">
-      <div class="u-clearfix u-sheet u-valign-top u-sheet-1">
-        <div class="u-border-2 u-border-black u-container-style u-expanded-width u-grey-10 u-group u-radius-25 u-shape-round u-group-1">
-          <div class="u-container-layout u-valign-bottom u-container-layout-1">
-            <div class="u-align-left u-clearfix u-custom-html u-custom-html-1"><!-- #!{php1} -->
+      <div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
+        <div class="u-border-2 u-border-black u-container-style u-custom-color-1 u-expanded-width u-group u-radius-25 u-shape-round u-group-1">
+          <div class="u-container-layout u-container-layout-1">
+            <div class="u-clearfix u-custom-html u-custom-html-1"><!-- #!{php2} -->
 <?php
-foreach($transactions as &$transaction) {
-    if ($transaction->category == 'receive' && floatval($transaction->time) >= $_SESSION['txnow']) {
-        echo 'found';
-//        print_r($transaction);
-        displayincomingtransaction($transaction);
-    }
+if($_SESSION['depositconfirmpagestatus'] == 'show') { $depositstatus = 'Incoming Deposit:'; }
+else { $depositstatus = 'Waiting for deposit...'; }
+echo "<h2 style=\"text-align: left; padding-left: 30px;\">".$depositstatus."</h2>";
+?>
+</div>
+            <div class="u-align-center u-clearfix u-custom-html u-custom-html-2"><!-- #!{php1} -->
+<?php
+        $switch = false;
+        foreach ($transactions as &$transaction) {
+            if ($transaction->category == 'receive' && floatval($transaction->time) >= $_SESSION['txnow']) {
+                if($_SESSION['depositconfirmpagestatus'] == 'show') {
+                    btc_displayincomingtransaction($transaction);
+                    $switch = true;
+                } else {
+                    echo $_SESSION['depositconfirmpagestatus'];
+                    $_SESSION['depositconfirmpagestatus'] = 'show';
+                    echo $_SESSION['depositconfirmpagestatus'];
+                    ob_flush();
+                    ob_end_clean();
+                    Redirect\redirect('');
+                    exit();
+                }
+            }
+        }
+        if($_SESSION['depositconfirmpagestatus'] == 'wait') {
+            $lastrefresh = false;
+            $padding = strval((545/2)-200).'px';
+            echo "<img style=\"width: 400px; height: 400px; margin-top: $padding\" src=\"resources/animated/loading.gif\"/>";
+        }
+        ?>
+</div>
+            <div class="u-align-center u-clearfix u-custom-html u-custom-html-3"><!-- #!{php3} -->
+<?php
+if($_SESSION['depositconfirmpagestatus'] == 'wait') {
+    $newaddress = $_SESSION['newaddress'];
+    echo "<div>";
+    echo "<p style=\"text-align: center; margin-left: 50px;\">Please send your deposit to this address: $newaddress</p>";
+    echo "<p style=\"text-align: center; margin-left: 50px; color: lightblue\">It may take a few minutes to receive your deposit.</p>";
+    echo "</div>";
 }
 ?>
 </div>
@@ -117,7 +150,8 @@ foreach($transactions as &$transaction) {
     
     
     <footer class="u-align-center u-clearfix u-footer u-grey-80 u-footer" id="sec-bc4e"><div class="u-clearfix u-sheet u-sheet-1">
-        <p class="u-small-text u-text u-text-variant u-text-1">Sample text. Click to select the text box. Click again or double click to start editing the text.</p>
+        <p class="u-small-text u-text u-text-variant u-text-1">This site is under development.<br>geruoff@syr.edu<br>2021
+        </p>
       </div></footer>
     <section class="u-backlink u-clearfix u-grey-80">
       <a class="u-link" href="https://nicepage.com/html5-template" target="_blank">
@@ -131,4 +165,19 @@ foreach($transactions as &$transaction) {
       </a>. 
     </section>
   </body>
-</html>
+</html><!-- #!{foot} -->
+<?php
+        if($_SESSION['depositconfirmpagestatus'] == 'wait') {
+            ob_flush();
+            ob_end_clean();
+            sleep(15);
+            Redirect\redirect('');
+            exit();
+        }
+
+        if($switch) {
+            $_SESSION['depositconfirmpagestatus'] = 'wait';
+            echo $_SESSION['depositconfirmpagestatus'];
+        }
+
+?>

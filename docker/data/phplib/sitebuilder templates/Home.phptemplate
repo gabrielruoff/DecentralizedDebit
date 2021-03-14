@@ -34,15 +34,17 @@ function make_balance_block($currency, $data)
     <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
         <?php
         $icons = '/resources/icons/';
-        echo "<a href=\"wallet.php?currency=$currency\">";
-        echo "<img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        echo "<a href=\"wallet.php?currency=$currency\"><img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if($currency != 'tok') { $decimals = 8; } else { $decimals = 2; }
         if ($data->{$currency} != 'null') {
             echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), 8) . " </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), 8)  . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), $decimals) . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), $decimals)  . " </p>";
             echo "</a>";
         } else {
+            echo "<a href=\"deposit.php?currency=$currency\">";
             echo "<p> No " . strtoupper($currency) . " Wallet </p>";
+            echo "</a>";
         }
         ?>
     </div>

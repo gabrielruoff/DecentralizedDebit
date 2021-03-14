@@ -514,3 +514,23 @@
 2021-03-04 03:05:18,711 INFO spawned: 'php-fpm' with pid 10
 2021-03-04 03:05:19,994 INFO success: cron entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2021-03-04 03:05:19,995 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2021-03-11 09:22:12,724 WARN received SIGQUIT indicating exit request
+2021-03-11 09:22:12,739 INFO waiting for cron, php-fpm to die
+2021-03-11 09:22:13,812 INFO stopped: php-fpm (exit status 0)
+2021-03-11 09:22:13,814 INFO stopped: cron (terminated by SIGTERM)
+2021-03-11 09:28:21,059 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2021-03-11 09:28:21,068 INFO supervisord started with pid 1
+2021-03-11 09:28:22,074 INFO spawned: 'cron' with pid 9
+2021-03-11 09:28:22,079 INFO spawned: 'php-fpm' with pid 10
+2021-03-11 09:28:23,513 INFO success: cron entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2021-03-11 09:28:23,513 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2021-03-14 07:02:12,064 WARN received SIGQUIT indicating exit request
+2021-03-14 07:02:12,071 INFO waiting for cron, php-fpm to die
+2021-03-14 07:02:12,108 INFO stopped: php-fpm (exit status 0)
+2021-03-14 07:02:12,109 INFO stopped: cron (terminated by SIGTERM)
+2021-03-14 07:02:17,915 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2021-03-14 07:02:17,924 INFO supervisord started with pid 1
+2021-03-14 07:02:18,927 INFO spawned: 'cron' with pid 9
+2021-03-14 07:02:18,930 INFO spawned: 'php-fpm' with pid 10
+2021-03-14 07:02:19,938 INFO success: cron entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2021-03-14 07:02:19,938 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

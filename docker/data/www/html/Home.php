@@ -18,7 +18,7 @@ use Backend\apibackend;
 <link rel="stylesheet" href="Home.css" media="screen">
     <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
     <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
-    <meta name="generator" content="Nicepage 3.8.0, nicepage.com">
+    <meta name="generator" content="Nicepage 3.9.0, nicepage.com">
     <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i">
     
     
@@ -34,7 +34,7 @@ use Backend\apibackend;
     <link rel="canonical" href="index.html">
     <meta property="og:url" content="index.html">
   </head>
-  <body class="u-body"><header class="u-clearfix u-header u-header" id="sec-e42f"><div class="u-clearfix u-sheet u-sheet-1">
+  <body class="u-body"><header class="u-clearfix u-header u-palette-1-base u-header" id="sec-e42f"><div class="u-clearfix u-sheet u-sheet-1">
         <nav class="u-menu u-menu-dropdown u-offcanvas u-menu-1">
           <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px;">
             <a class="u-button-style u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-top-bottom-menu-spacing u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#">
@@ -49,6 +49,7 @@ use Backend\apibackend;
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="About.html" style="padding: 10px 20px;">About</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Home.php" style="padding: 10px 20px;">User Home</a>
 </li></ul>
           </div>
           <div class="u-custom-menu u-nav-container-collapse">
@@ -59,6 +60,7 @@ use Backend\apibackend;
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="About.html" style="padding: 10px 20px;">About</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Home.php" style="padding: 10px 20px;">User Home</a>
 </li></ul>
               </div>
             </div>
@@ -97,15 +99,17 @@ function make_balance_block($currency, $data)
     <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
         <?php
         $icons = '/resources/icons/';
-        echo "<a href=\"wallet.php?currency=$currency\">";
-        echo "<img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        echo "<a href=\"wallet.php?currency=$currency\"><img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if($currency != 'tok') { $decimals = 8; } else { $decimals = 2; }
         if ($data->{$currency} != 'null') {
             echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), 8) . " </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), 8)  . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), $decimals) . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), $decimals)  . " </p>";
             echo "</a>";
         } else {
+            echo "<a href=\"deposit.php?currency=$currency\">";
             echo "<p> No " . strtoupper($currency) . " Wallet </p>";
+            echo "</a>";
         }
         ?>
     </div>
@@ -126,13 +130,15 @@ foreach ($balances->data as $key => $value) {
               <div class="u-size-17">
                 <div class="u-layout-col">
                   <div class="u-align-left u-black u-container-style u-layout-cell u-size-30 u-layout-cell-2">
-                    <div class="u-border-2 u-border-grey-75 u-container-layout u-valign-middle u-container-layout-2">
+                    <div class="u-border-2 u-border-grey-75 u-container-layout u-container-layout-2">
+                      <h6 class="u-text u-text-default u-text-1">Account<span style="text-decoration: underline !important;"></span>
+                      </h6>
                       <a href="https://nicepage.com/website-templates" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-50 u-btn-1">Settings</a>
                     </div>
                   </div>
                   <div class="u-container-style u-layout-cell u-palette-1-base u-size-30 u-layout-cell-3">
                     <div class="u-border-2 u-border-grey-75 u-container-layout u-container-layout-3">
-                      <h6 class="u-text u-text-1">History</h6>
+                      <h6 class="u-text u-text-2">History</h6>
                     </div>
                   </div>
                 </div>
@@ -142,8 +148,8 @@ foreach ($balances->data as $key => $value) {
         </div>
         <div class="u-black u-border-2 u-border-grey-75 u-container-style u-expanded-width u-group u-group-1">
           <div class="u-container-layout u-container-layout-4">
-            <a href="deposit.php" class="u-border-2 u-border-hover-palette-1-base u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-2">Deposit</a>
-            <a href="withdraw.php" class="u-border-2 u-border-hover-palette-1-base u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-3">Withdraw</a>
+            <a href="deposit.php" class="u-border-2 u-border-hover-palette-4-light-2 u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-2">Deposit</a>
+            <a href="withdraw.php" class="u-border-2 u-border-hover-palette-4-light-2 u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-3">Withdraw</a>
           </div>
         </div>
       </div>

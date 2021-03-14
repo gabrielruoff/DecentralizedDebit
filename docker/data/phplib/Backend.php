@@ -91,6 +91,18 @@ class apibackend
         return $this->_request('Merchant/'.$username, $body);
     }
 
+    public function submittokendeposit($username, $sessionid, $tx) {
+        $params = ["session_id" => $sessionid, "tx" => $tx];
+        $body = ["method" => "submittokendeposit", "body" => $params];
+        return $this->_request('Merchant/'.$username, $body);
+    }
+
+        public function gettokentransaction($username, $sessionid, $txid) {
+        $params = ["session_id" => $sessionid, "txid" => $txid];
+        $body = ["method" => "gettokentransaction", "body" => $params];
+        return $this->_request('Merchant/'.$username, $body);
+    }
+
     public function generatesessionid($username, $password) {
         $params = ["password" => $password];
         $body = ["method" => "generatesessionid", "body" => $params];

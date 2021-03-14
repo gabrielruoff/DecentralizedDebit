@@ -1,0 +1,39 @@
+#{head}
+<?php
+session_start();
+require_once('/usr/local/php/lib/Backend.php');
+use Backend\apibackend;
+
+function show_completed_deposit($transaction) {
+    $txid = $transaction[1];
+    $payer_email = $transaction[3];
+    $payer_name = $transaction[7];
+    $currency_code = $transaction[8];
+    $amount = number_format(floatval($transaction[9]), 2);
+
+    echo "<div align='left'>";
+    echo "<h1 style='text-align: center; color: orange'>Desposit Successful!</h1>";
+    echo "<br><br>";
+    echo "<p>Deposit id: $txid</p>";
+    echo "<p>Customer: $payer_name, $payer_email</p>";
+    echo "<p>Deposit: $amount $currency_code</p>";
+    echo "</div>";
+}
+?>
+#{/head}
+
+#{php1}
+<?php
+$b = new apibackend();
+if(isset($_GET['txid'])) {
+    $username = $_SESSION['username']; $sessionid = $_SESSION['sessionid'];
+    $transaction = $b->gettokentransaction($username, $sessionid, $_GET['txid']);
+//    print_r($transaction->data->tx);
+
+    show_completed_deposit($transaction->data->tx);
+
+} else {
+    echo 'no transaction id';
+}
+?>
+#{/php1}

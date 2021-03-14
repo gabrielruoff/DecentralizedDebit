@@ -50,7 +50,6 @@ echo "<h2 style=\"text-align: left; padding-left: 30px;\">".$depositstatus."</h2
         $switch = false;
         foreach ($transactions as &$transaction) {
             if ($transaction->category == 'receive' && floatval($transaction->time) >= $_SESSION['txnow']) {
-                print_r($transaction);
                 if($_SESSION['depositconfirmpagestatus'] == 'show') {
                     btc_displayincomingtransaction($transaction);
                     $switch = true;

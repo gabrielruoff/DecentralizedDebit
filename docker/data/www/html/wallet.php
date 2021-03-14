@@ -2,8 +2,10 @@
 <?php
 session_start();
 require_once('/usr/local/php/lib/Backend.php');
+
 use Backend\apibackend;
 use Redirect;
+
 $b = new apibackend();
 $username = $_SESSION['username'];
 $sessionid = $_SESSION['sessionid'];
@@ -21,7 +23,7 @@ $sessionid = $_SESSION['sessionid'];
 <link rel="stylesheet" href="wallet.css" media="screen">
     <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
     <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
-    <meta name="generator" content="Nicepage 3.8.0, nicepage.com">
+    <meta name="generator" content="Nicepage 3.9.0, nicepage.com">
     <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i">
     
     
@@ -37,7 +39,7 @@ $sessionid = $_SESSION['sessionid'];
     <link rel="canonical" href="index.html">
     <meta property="og:url" content="index.html">
   </head>
-  <body class="u-body"><header class="u-clearfix u-header u-header" id="sec-e42f"><div class="u-clearfix u-sheet u-sheet-1">
+  <body class="u-body"><header class="u-clearfix u-header u-palette-1-base u-header" id="sec-e42f"><div class="u-clearfix u-sheet u-sheet-1">
         <nav class="u-menu u-menu-dropdown u-offcanvas u-menu-1">
           <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px;">
             <a class="u-button-style u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-top-bottom-menu-spacing u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#">
@@ -52,6 +54,7 @@ $sessionid = $_SESSION['sessionid'];
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="About.html" style="padding: 10px 20px;">About</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Home.php" style="padding: 10px 20px;">User Home</a>
 </li></ul>
           </div>
           <div class="u-custom-menu u-nav-container-collapse">
@@ -62,6 +65,7 @@ $sessionid = $_SESSION['sessionid'];
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="About.html" style="padding: 10px 20px;">About</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
 </li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Home.php" style="padding: 10px 20px;">User Home</a>
 </li></ul>
               </div>
             </div>
@@ -85,8 +89,9 @@ $sessionid = $_SESSION['sessionid'];
 $currency = $_GET['currency'];
 // show coin logo
 $icons = '/resources/icons/';
+$_currency = strtoupper($currency);
 echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; width: 400px;\">";
-echo "<h2 style=\"text-align: center; font-weight: bold\">Wallet: $currency</h2>";
+echo "<h2 style=\"text-align: center; font-weight: bold\">Wallet: $_currency</h2>";
 echo "<img style=\"width: 200px; height: 200px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
 echo "</div>";
 ?>
@@ -100,20 +105,26 @@ echo "</div>";
 $balances = $b->getbalance($username, $currency, $sessionid);
 function make_balance_block($currency, $data)
 {
-    print_r($data);
+    if($currency != 'tok') { $decimals = 8; } else { $decimals = 2; }
     ?>
-    <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
+    <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px; text-align: center;">
         <?php
-            echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), 8) . " </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), 8)  . " </p>";
+        echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
+        echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->balance_conf), $decimals) . " </p>";
+        echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->balance_unconf), $decimals) . " </p>";
         ?>
     </div>
-    <br>
 <?php }
 
 // make a block displaying balance data for each wallet
-make_balance_block($currency, $balances->data);
+if ($balances->success == true) {
+    make_balance_block($currency, $balances->data);
+} else {
+    $_currency = strtoupper($currency);
+    echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; width: 200px; text-align: center;\">";
+    echo "<p style=\"text-align: left; padding-left: 20px\"> No $_currency wallet </p>";
+    echo "</div>";
+}
 
 ?>
 </div>
@@ -132,22 +143,26 @@ make_balance_block($currency, $balances->data);
 $receive = array();
 $send = array();
 $transactions = $b->listtransactions('apitest', $currency, $sessionid)->data->transactions;
-foreach($transactions as &$transaction) {
-    if($transaction->category == 'receive') {
+foreach ($transactions as &$transaction) {
+    if ($transaction->category == 'receive') {
         array_push($receive, $transaction);
-    } elseif($transaction->category == 'send') {
+    } elseif ($transaction->category == 'send') {
         array_push($send, $transaction);
     }
 }
 
-function displaytransaction($transaction) {
+function displaytransaction($transaction)
+{
     $statuscolor = 'orange';
     $statusstring = 'Pending';
-    if($transaction->confirmations >= 10) { $statuscolor = 'green'; $statusstring = 'Confirmed'; }
+    if ($transaction->confirmations >= 10) {
+        $statuscolor = 'green';
+        $statusstring = 'Confirmed';
+    }
     echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; width: 400px;\">";
     echo "<p style=\"text-align: left; padding-left: 15px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
     echo "<p style=\"text-align: left; padding-left: 30px; color: $statuscolor\">Status: $statusstring</p>";
-    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: +$transaction->amount </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: $transaction->amount </p>";
     echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Received at: $transaction->time </p>";
     echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
     echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>";
@@ -155,7 +170,7 @@ function displaytransaction($transaction) {
 }
 
 // display received
-foreach($receive as &$received) {
+foreach ($receive as &$received) {
     displaytransaction($received);
 }
 ?>
@@ -168,7 +183,7 @@ foreach($receive as &$received) {
                       <div class="u-align-center u-clearfix u-custom-html u-custom-html-4"><!-- #!{php4} -->
 <?php
 // display sent
-foreach($send as &$sent) {
+foreach ($send as &$sent) {
     displaytransaction($sent);
 }
 ?>

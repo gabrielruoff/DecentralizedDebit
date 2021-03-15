@@ -2,7 +2,8 @@
 # RESTapi to facilitate server-client communication
 
 from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource, request
+from flask_restful import Api, Resource, request
+
 from api_ref import *
 
 app = Flask(__name__)

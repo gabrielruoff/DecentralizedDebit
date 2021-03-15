@@ -179,18 +179,20 @@ class _backend:
 
     # required
     def _list_transactions_tok(self, username):
+        transactions = []
         tok_transactions = self._select(MYSQL_TAB_TOKTRANSACTIONS, 'user', username, selection='category, amount, txid, create_time')
-        if tok_transactions:
-            tok_transactions = tok_transactions[0]
+        for tx in tok_transactions:
+            tok_transactions = tx[0]
             # non-applicable information to TOKEN
             confirmations = 10
-            print(tok_transactions)
-            category = tok_transactions[0]
-            amount = tok_transactions[1]
-            txid = tok_transactions[2]
-            time = datetime.strftime(tok_transactions[-1], "%Y-%m-%d %H:%M:%S")
+            category = tx[0]
+            amount = tx[1]
+            txid = tx[2]
+            time = datetime.strftime(tx[-1], "%Y-%m-%d %H:%M:%S")
             address = username
-            return self._build_api_response(True, data={'category': category, 'amount': amount, 'txid': txid, 'time': time, 'address': address})
+            transactions.append({'category': category, 'amount': amount, 'txid': txid, 'time': time, 'address': address, 'confirmations': confirmations})
+        print(transactions)
+        return self._build_api_response(True, data={'transactions': transactions})
 
 
     ##########################################

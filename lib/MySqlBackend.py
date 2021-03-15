@@ -157,6 +157,7 @@ class _backend:
     #            TOKEN FUNCTIONS             #
     ##########################################
 
+    # required
     def _update_balance_tok(self, username):
         # retrieve the users' token balance
         tokbalance = self._select(MYSQL_TAB_TOKWALLETS, 'name', username, selection="balance_conf")[0]
@@ -165,6 +166,7 @@ class _backend:
             return self._build_api_response(True, data={'balance_conf': str(tokbalance[0]), 'balance_unconf': str(0)})
         return self._build_api_response(False, err='genericapierror')
 
+    # helper
     def _modify_tok_balance(self, username, amount, increase=True):
         # retrieve the users' token balance
         tokbalance = self._select(MYSQL_TAB_TOKWALLETS, 'name', username, selection="balance_conf")[0][0]
@@ -175,10 +177,27 @@ class _backend:
         # update it to the new value
         return self._update(MYSQL_TAB_TOKWALLETS, ['balance_conf'], [tokbalance], 'name', username)
 
+    # required
+    def _list_transactions_tok(self, username):
+        tok_transactions = self._select(MYSQL_TAB_TOKTRANSACTIONS, 'user', username, selection='category, amount, txid, create_time')
+        if tok_transactions:
+            tok_transactions = tok_transactions[0]
+            # non-applicable information to TOKEN
+            confirmations = 10
+            print(tok_transactions)
+            category = tok_transactions[0]
+            amount = tok_transactions[1]
+            txid = tok_transactions[2]
+            time = datetime.strftime(tok_transactions[-1], "%Y-%m-%d %H:%M:%S")
+            address = username
+            return self._build_api_response(True, data={'category': category, 'amount': amount, 'txid': txid, 'time': time, 'address': address})
+
+
     ##########################################
     #           BITCOIN FUNCTIONS            #
     ##########################################
 
+    # required
     def _create_wallet_btc(self, username):
         # create a wallet name by hashing the users uid and passwd
         wallet_name = self._getwalletname(username)
@@ -199,6 +218,7 @@ class _backend:
                 return self._build_api_response(True)
         return self._build_api_response(False, err='genericapierror')
 
+    # required
     def _update_balance_btc(self, username):
         # get the wallet name
         wallet_name = self._getwalletname(username)
@@ -214,6 +234,7 @@ class _backend:
                                                         'balance_unconf': str(balance_unconf)})
         return self._build_api_response(False, err='genericapierror')
 
+    # required
     def _get_new_address_btc(self, username):
         # get the wallet name
         wallet_name = self._getwalletname(username)
@@ -225,6 +246,7 @@ class _backend:
         # The api handler converts this output into a boolean
         return new_address
 
+    # required
     def _list_transactions_btc(self, username):
         wallet_name = self._getwalletname(username)
         transactions = self.btcrpc.listtransactions(wallet_name)[0]
@@ -310,15 +332,17 @@ class _backend:
         amount = tx['purchase_units'][0]['payments']['captures'][0]['amount']['value']
         final_capture = tx['purchase_units'][0]['payments']['captures'][0]['final_capture']
         create_time = tx['purchase_units'][0]['payments']['captures'][0]['create_time']
-
         create_time = datetime.strptime(create_time, "%Y-%m-%dT%H:%M:%SZ")
+        # transaction category and associated user
+        category = 'receive'
+        user = username
 
         if not self._select(MYSQL_TAB_TOKTRANSACTIONS, 'txid', txid, selection='status'):
             if self._insert(MYSQL_TAB_TOKTRANSACTIONS,
                             ['txid', 'status', 'payer', 'payer_id', 'country_code', 'postal_code', 'name',
-                             'currency_code', 'amount', 'final_capture', 'create_time'],
+                             'currency_code', 'amount', 'final_capture', 'category', 'user', 'create_time'],
                             [txid, status, payer, payer_id, country_code, postal_code, name, currency_code, amount,
-                             final_capture, create_time]):
+                             final_capture, category, user, create_time]):
                 if self._modify_tok_balance(username, amount, True):
                     return self._build_api_response(True)
         return self._build_api_response(False, err='duplicate paypal transaction')
@@ -347,8 +371,10 @@ class _backend:
                     currency_code = 'USD'
                     create_time = datetime.now()
                     payer = 'system'
-                    if self._insert(MYSQL_TAB_TOKTRANSACTIONS, ['txid', 'status', 'payer', 'currency_code', 'amount', 'create_time'],
-                                    [txid, 'COMPLETED', payer, currency_code, amount, create_time]):
+                    category = 'send'
+                    user = username
+                    if self._insert(MYSQL_TAB_TOKTRANSACTIONS, ['txid', 'status', 'payer', 'currency_code', 'amount', 'category', 'user', 'create_time'],
+                                    [txid, 'COMPLETED', payer, currency_code, amount, category, user, create_time]):
                         return self._build_api_response(True)
                 return self._build_api_response(False, err='genericapierror')
             return self._build_api_response(False, err='paypalpayouterror')

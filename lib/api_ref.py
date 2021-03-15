@@ -66,7 +66,9 @@ class account():
     def validatesession(self, username, data):
         with _backend() as b:
             if b._validate_session(data['session_id']):
+                print('tru')
                 return b._build_api_response(True)
+            print('fasl')
             return b._build_api_response(False, 'invaildsessionid')
 
     def createwalletbtc(self, username, data):

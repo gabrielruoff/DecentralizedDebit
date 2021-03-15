@@ -1,0 +1,72 @@
+---- Crypto transaction as stored in db ----
+Array ( [0] => stdClass Object ( [address] => bc1qzxl5lu6j30sawphwe9x4urdn77f3hv6fd6dun9 
+[category] => receive 
+[amount] => 0.00003553 
+[label] => 
+[vout] => 0 
+[confirmations] => 1632 
+[blockhash] => 0000000000000000000bd4fa1933fe01edc196e6ac249d087d7786569deb610d 
+[blockheight] => 673057 
+[blockindex] => 1161 
+[blocktime] => 1614819780 
+[txid] => ffa9cf08112a69a57cedc1f0e550ca50760631e74dadba439b37d0418f15d71e 
+[walletconflicts] => Array ( ) 
+[time] => 1614813673 
+[timereceived] => 1614813673 
+[bip125-replaceable] => no )
+
+---- Paypal transaction as stored in db ----
+{"create_time":"2021-03-10T23:31:43Z",
+"update_time":"2021-03-10T23:31:53Z",
+"id":"8UT64064Y1885783P",
+"intent":"CAPTURE",
+"status":"COMPLETED",
+"payer":{"email_address":"sb-yttsx5369489@personal.example.com",
+"payer_id":"DSYBPTKZKHK6L",
+"address":{"address_line_1":"1 Main St",
+"admin_area_2":"San Jose",
+"admin_area_1":"CA",
+"postal_code":"95131",
+"country_code":"US"},
+"name":{"given_name":"John",
+"surname":"Doe"},
+"phone":{"phone_number":{"national_number":"4083753851"}}},
+"purchase_units":[{"description":"Token Deposit",
+"reference_id":"default",
+"amount":{"value":"600.00",
+"currency_code":"USD"},
+"payee":{"email_address":"barco.03-facilitator@gmail.com",
+"merchant_id":"YQZCHTGHUK5P8"},
+"shipping":{"name":{"full_name":"John Doe"},
+"address":{"address_line_1":"1 Main St",
+"admin_area_2":"San Jose",
+"admin_area_1":"CA",
+"postal_code":"95131",
+"country_code":"US"}},
+"payments":{"captures":[{"status":"COMPLETED",
+"id":"5JS73574N9053032X",
+"final_capture":true,
+"create_time":"2021-03-10T23:31:53Z",
+"update_time":"2021-03-10T23:31:53Z",
+"amount":{"value":"600.00",
+"currency_code":"USD"},
+"seller_protection":{"status":"ELIGIBLE",
+"dispute_categories":["ITEM_NOT_RECEIVED",
+"UNAUTHORIZED_TRANSACTION"]},
+"links":[{"href":"https://api.sandbox.paypal.com/v2/payments/captures/5JS73574N9053032X",
+"rel":"self",
+"method":"GET",
+"title":"GET"},
+{"href":"https://api.sandbox.paypal.com/v2/payments/captures/5JS73574N9053032X/refund",
+"rel":"refund",
+"method":"POST",
+"title":"POST"},
+{"href":"https://api.sandbox.paypal.com/v2/checkout/orders/8UT64064Y1885783P",
+"rel":"up",
+"method":"GET",
+"title":"GET"}]}]}}],
+"links":[{"href":"https://api.sandbox.paypal.com/v2/checkout/orders/8UT64064Y1885783P",
+"rel":"self",
+"method":"GET",
+"title":"GET"}]}
+

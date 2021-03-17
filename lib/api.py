@@ -48,8 +48,10 @@ class Wallet(Resource):
 
     def post(self, username, currency):
         content = request.get_json()
+        origin = request.remote_addr
         # get request method and body
         method, body = content['method'], content['body']
+        body['origin'] = origin
         # METHODS
         # getbalance: url /Wallet/<username>/<currency> { method: getbalance } body = { session_id }
         # - currency = '*' returns balance of all open wallets under this account

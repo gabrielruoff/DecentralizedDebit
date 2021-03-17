@@ -49,8 +49,9 @@ class bitcoinrpc:
         try:
             send = self.rpc_connection.batch_(commands)
         except JSONRPCException as e:
+            self._unloadwallet(tx_wallet_name)
             print(str(e))
-            return False
+            return str(e)
         self._unloadwallet(tx_wallet_name)
         print(send)
         return True

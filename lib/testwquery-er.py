@@ -44,9 +44,17 @@ print(session_id)
 # data = {'method':'listtransactions', 'body':{'session_id':session_id, 'amount': 50000, 'destination': 'sb-yttsx5369489@personal.example.com'}}
 # headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
-url = pc+"/Wallet/apitest/tok"
-data = {'method':'listtransactions', 'body':{'session_id':session_id}}
+# url = pc+"/Wallet/apitest/btc"
+# data = {'method':'listtransactions', 'body':{'session_id':session_id}}
+# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+url = pc+"/Wallet/apitest/btc"
+data = {'method':'sendoffchain', 'body':{'session_id':session_id, 'rx': 'test3', 'amount': 0.001}}
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+# url =pc+"/Wallet/apitest/btc"
+# data = {'method':'withdrawcrypto', 'body':{'session_id':session_id, 'rx': 'bc1qfxkq08npxk2qxvxjqlp7nwwlw90sy5xfhmsan2', 'amount': 0.0001}}
+# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
 # url =pc+"/Wallet/apitest/tok"
 # data = {'method':'sendtoaddress', 'body':{'session_id':session_id}}

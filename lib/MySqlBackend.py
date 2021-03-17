@@ -191,8 +191,10 @@ class _backend:
             time = datetime.strftime(tx[-1], "%Y-%m-%d %H:%M:%S")
             address = username
             transactions.append({'category': category, 'amount': amount, 'txid': txid, 'time': time, 'address': address, 'confirmations': confirmations})
+            # reverse for chronological order
+            transactions.reverse()
         print(transactions)
-        return self._build_api_response(True, data={'transactions': transactions})
+        return self._build_api_response(True, data={'transactions': transactions })
 
 
     ##########################################
@@ -252,9 +254,15 @@ class _backend:
         tx = self._getwalletname(tx)
         coin_backend = Bitcoin.bitcoinrpc()
         # make transaction
-        if coin_backend.sendtoaddress(tx, rx, amount):
-            return self._build_api_response(True)
-        return self._build_api_response(False, err='transactionerror')
+        transaction = coin_backend.sendtoaddress(tx, rx, amount)
+        print(transaction)
+        if transaction == True:
+            # add transaction to blockchain
+            _tx = { 'tx': tx, 'rx': rx, 'amount': amount }
+            if self._add_transaction_to_blockchain(tx, withdrawl=True):
+                return self._build_api_response(True)
+            return self._build_api_response(False, err='blockchainerror')
+        return self._build_api_response(False, err=str(transaction))
 
     # required
     def _list_transactions_btc(self, username):
@@ -266,6 +274,32 @@ class _backend:
             if transaction[1]['category'] == 'send':
                 transaction[1]['fee'] = str(transaction[1]['fee'])
         return self._build_api_response(True, data={'transactions': transactions})
+
+    def _modify_balance_btc(self, username, amount, increase=True):
+        # retrieve the users' token balance
+        tokbalance = self._select(MYSQL_TAB_BTCWALLETS+'2', 'name', username, selection="balance_conf")[0][0]
+        if increase:
+            tokbalance += float(amount)
+        elif (tokbalance - float(amount)) > 0:
+            tokbalance -= float(amount)
+        else:
+            return self._build_api_response(False, 'insufficient funds')
+        # update it to the new value
+        return self._update(MYSQL_TAB_BTCWALLETS+'2', ['balance_conf'], [tokbalance], 'name', username)
+
+    def sendoffchain_btc(self, tx, rx, amount):
+        # decrease sender's balance
+        decrease = self._modify_balance_btc(tx, amount, increase=False)
+        # increase recipient's balance
+        increase = self._modify_balance_btc(rx, amount, increase=True)
+        if increase and decrease:
+            if self._insert('btc_transactions', ['txid', 'tx', 'rx', 'amount'], [uuid.uuid4(), tx, rx, amount]):
+                return self._build_api_response(True)
+            # undo
+            self._modify_balance_btc(tx, amount, increase=True)
+            self._modify_balance_btc(rx, amount, increase=False)
+            return self._build_api_response(False, err='databaseerror')
+        return decrease
 
     ##########################################
     #         TRANSACTION FUNCTIONS          #
@@ -317,7 +351,7 @@ class _backend:
         return not self._select(MYSQL_TAB_TX_BLOCKCHAIN, 'hash', sha224(binascii.unhexlify(tx.signed_hash)).hexdigest(),
                                 selection='block_id')
 
-    def _add_transaction_to_blockchain(self, tx):
+    def _add_transaction_to_blockchain(self, tx, withdrawl=False, deposit=False):
         # get required data
         block_id = self._raw_query("SELECT COUNT(block_id) FROM " + MYSQL_DB + "." + MYSQL_TAB_TX_BLOCKCHAIN)[0][0] + 1
         prev_hash = self._raw_query(
@@ -325,7 +359,10 @@ class _backend:
             0]
         prev_hash = sha224(prev_hash[0] + prev_hash[1])
         print(prev_hash)
-        this_hash = sha224(binascii.unhexlify(tx.signed_hash).hexdigest())
+        if withdrawl:
+            this_hash = sha224(tx['tx'] + tx['rx'] + str(tx['amount']))
+        else:
+            this_hash = sha224(binascii.unhexlify(tx.signed_hash).hexdigest())
         return self._insert(MYSQL_TAB_TX_BLOCKCHAIN, ['prev_hash', 'block_id', 'hash'],
                             [prev_hash, block_id, this_hash])
 
@@ -361,7 +398,8 @@ class _backend:
 
     def _get_token_transaction_by_txid(self, txid):
         tx = list(self._select(MYSQL_TAB_TOKTRANSACTIONS, 'txid', txid)[0])
-        tx[-1] = datetime.strftime(tx[-1], "%Y-%m-%d %H:%M:%S")
+        print(tx)
+        tx[-3] = datetime.strftime(tx[-3], "%Y-%m-%d %H:%M:%S")
         print(tx)
         if tx:
             return self._build_api_response(True, data={'tx': tx})
@@ -370,7 +408,7 @@ class _backend:
     # destination is a paypal email
     def _confirm_token_withdrawl(self, username, amount, destination):
         # make sure the user has enough tokens
-        if float(self._update_balance_tok(username)['data']['balance_conf']) > amount:
+        if float(self._update_balance_tok(username)['data']['balance_conf']) > float(amount):
             # process the payout
             if Payouts.CreatePayouts().create_payout(destination, amount):
                 # modify the user's token balance
@@ -402,7 +440,7 @@ class _backend:
         return response
 
     def _validate_trusted_ip(self, ip):
-        valid_ips = '192.168.1.2:127.0.0.1:45.61.54.203'
+        valid_ips = '192.168.1.2:127.0.0.1:45.61.54.203:71.176.66.122'
         print(ip in valid_ips)
         return ip in valid_ips
 

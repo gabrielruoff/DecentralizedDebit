@@ -54,6 +54,8 @@ class Wallet(Resource):
         # getbalance: url /Wallet/<username>/<currency> { method: getbalance } body = { session_id }
         # - currency = '*' returns balance of all open wallets under this account
         # getnewaddress: url /Wallet/<username>/<currency> { method: getnewaddress } body = { session_id }
+        # withdrawcrypto: url /Wallet/<username>/<currency> { method: withdrawcrypto }
+        # body = { session_id, rx, amount }
         with wallet() as w:
             func = getattr(w, method)
             print(func)

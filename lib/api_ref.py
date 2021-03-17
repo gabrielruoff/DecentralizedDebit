@@ -124,13 +124,17 @@ class wallet():
                 return func(username)
             return b._build_api_response(False, 'invalidsessionsid')
 
-    def withdraw(self, username, currency, data):
-        # validate credentials
-        with _backend() as b:
-            if b._validate_session(data['session_id']):
-                func = getattr(b, '_list_transactions_' + currency)
-                return func(username, data['rx', data['amount']])
-            return b._build_api_response(False, 'invalidsessionsid')
+    def withdrawcrypto(self, username, currency, data):
+        try:
+            # validate credentials
+            with _backend() as b:
+                if b._validate_session(data['session_id']):
+                    func = getattr(b, '_withdraw_crypto_' + currency)
+                    return func(username, data['rx'], data['amount'])
+                return b._build_api_response(False, 'invaildsessionid')
+        except AttributeError as e:
+            print(str(e))
+            return b._build_api_response(False, err='invalid currency \'' + str(currency)+'\'')
 
 
 class merchant():

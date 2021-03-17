@@ -86,13 +86,14 @@ class CreatePayouts(PayPalClient):
                 "note": "Your 1$ Payout!",
                 "amount": {
                     "currency": "USD",
-                    "value": "{:.2f}".format(amount)
+                    "value": "{:.2f}".format(float(amount))
                 },
                 "receiver": rx,
                 "sender_item_id": "Test_txn_1"
             }]
         }
 
+        print(body)
         request.request_body(body)
         response = self.client.execute(request)
 

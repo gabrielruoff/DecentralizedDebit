@@ -248,6 +248,14 @@ class _backend:
         # The api handler converts this output into a boolean
         return new_address
 
+    def _withdraw_crypto_btc(self, tx, rx, amount):
+        tx = self._getwalletname(tx)
+        coin_backend = Bitcoin.bitcoinrpc()
+        # make transaction
+        if coin_backend.sendtoaddress(tx, rx, amount):
+            return self._build_api_response(True)
+        return self._build_api_response(False, err='transactionerror')
+
     # required
     def _list_transactions_btc(self, username):
         wallet_name = self._getwalletname(username)

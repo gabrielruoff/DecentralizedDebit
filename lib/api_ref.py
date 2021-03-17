@@ -124,6 +124,14 @@ class wallet():
                 return func(username)
             return b._build_api_response(False, 'invalidsessionsid')
 
+    def withdraw(self, username, currency, data):
+        # validate credentials
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                func = getattr(b, '_list_transactions_' + currency)
+                return func(username, data['rx', data['amount']])
+            return b._build_api_response(False, 'invalidsessionsid')
+
 
 class merchant():
     def __enter__(self):

@@ -225,18 +225,24 @@ class _backend:
     # required
     def _update_balance_btc(self, username):
         # get the wallet name
-        wallet_name = self._getwalletname(username)
-        print(wallet_name)
-        # retrieve the wallet's confirmed and unconfirmed balances
-        balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 1), self.btcrpc.getunconfirmedbalance(
-            wallet_name)
-        # update the database with these values
-        if self._update(MYSQL_TAB_BTCWALLETS, ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf],
-                        'name',
-                        wallet_name):
-            return self._build_api_response(True, data={'balance_conf': str(balance_conf),
-                                                        'balance_unconf': str(balance_unconf)})
-        return self._build_api_response(False, err='genericapierror')
+        # wallet_name = self._getwalletname(username)
+        # print(wallet_name)
+        # # retrieve the wallet's confirmed and unconfirmed balances
+        # balance_conf, balance_unconf = self.btcrpc.getbalance(wallet_name, 1), self.btcrpc.getunconfirmedbalance(
+        #     wallet_name)
+        # # update the database with these values
+        # if self._update(MYSQL_TAB_BTCWALLETS, ['BALANCE_CONF', 'BALANCE_UNCONF'], [balance_conf, balance_unconf],
+        #                 'name',
+        #                 wallet_name):
+        #     return self._build_api_response(True, data={'balance_conf': str(balance_conf),
+        #                                                 'balance_unconf': str(balance_unconf)})
+        # return self._build_api_response(False, err='genericapierror')
+        balances = self._select(MYSQL_TAB_BTCWALLETS, 'name', username, selection='balance_conf, balance_unconf')
+        if balances:
+            balance_conf, balance_unconf = balances[0]
+            print(balance_conf, balance_unconf)
+            return self._build_api_response(True, data={'balance_conf': str(balance_conf), 'balance_unconf': str(balance_unconf)})
+        return self._build_api_response(False, err='databaseerror')
 
     # required
     def _get_new_address_btc(self, username):
@@ -275,9 +281,20 @@ class _backend:
                 transaction[1]['fee'] = str(transaction[1]['fee'])
         return self._build_api_response(True, data={'transactions': transactions})
 
+    # wallet_name = self._getwalletname(username)
+    # transactions = self._select('btc_transactions', 'tx', username, suffix=' OR rx=\'' + username + '\'')
+    # print(transactions)
+    # if transactions:
+    #     for transaction in enumerate(transactions):
+    #         print(transaction)
+    #         transaction[1]['amount'] = str(transaction[1]['amount'])
+    #         if transaction[1]['category'] == 'send':
+    #             transaction[1]['fee'] = str(transaction[1]['fee'])
+    #     return self._build_api_response(True, data={'transactions': transactions})
+
     def _modify_balance_btc(self, username, amount, increase=True):
         # retrieve the users' token balance
-        tokbalance = self._select(MYSQL_TAB_BTCWALLETS+'2', 'name', username, selection="balance_conf")[0][0]
+        tokbalance = self._select(MYSQL_TAB_BTCWALLETS, 'name', username, selection="balance_conf")[0][0]
         if increase:
             tokbalance += float(amount)
         elif (tokbalance - float(amount)) > 0:
@@ -285,7 +302,7 @@ class _backend:
         else:
             return self._build_api_response(False, 'insufficient funds')
         # update it to the new value
-        return self._update(MYSQL_TAB_BTCWALLETS+'2', ['balance_conf'], [tokbalance], 'name', username)
+        return self._update(MYSQL_TAB_BTCWALLETS, ['balance_conf'], [tokbalance], 'name', username)
 
     def sendoffchain_btc(self, tx, rx, amount):
         # decrease sender's balance

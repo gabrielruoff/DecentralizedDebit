@@ -32,7 +32,7 @@ print(session_id)
 # data = {'method':'becomemerchant', 'body':{'username':'merchant', 'password':'test2'}}
 # headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
-# url = pc+"/Wallet/apitest/*"
+# url = pc+"/Wallet/apitest/btc"
 # data = {'method':'getbalance', 'body':{'session_id':session_id}}
 # headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
@@ -44,13 +44,13 @@ print(session_id)
 # data = {'method':'listtransactions', 'body':{'session_id':session_id, 'amount': 50000, 'destination': 'sb-yttsx5369489@personal.example.com'}}
 # headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
-# url = pc+"/Wallet/apitest/btc"
-# data = {'method':'listtransactions', 'body':{'session_id':session_id}}
-# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-
 url = pc+"/Wallet/apitest/btc"
-data = {'method':'sendoffchain', 'body':{'session_id':session_id, 'rx': 'test3', 'amount': 0.001}}
+data = {'method':'listtransactions', 'body':{'session_id':session_id}}
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+# url = pc+"/Wallet/apitest/btc"
+# data = {'method':'sendoffchain', 'body':{'session_id':session_id, 'rx': 'test3', 'amount': 0.001}}
+# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
 # url =pc+"/Wallet/apitest/btc"
 # data = {'method':'withdrawcrypto', 'body':{'session_id':session_id, 'rx': 'bc1qfxkq08npxk2qxvxjqlp7nwwlw90sy5xfhmsan2', 'amount': 0.0001}}

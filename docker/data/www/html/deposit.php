@@ -18,7 +18,9 @@ use Backend\apibackend;
     <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
     <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
     <meta name="generator" content="Nicepage 3.9.0, nicepage.com">
+    
     <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i">
+    
     
     
     <script type="application/ld+json">{
@@ -32,11 +34,17 @@ use Backend\apibackend;
     <meta name="theme-color" content="#478ac9">
     <link rel="canonical" href="index.html">
     <meta property="og:url" content="index.html">
-  </head>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff"</head>
   <body class="u-body"><header class="u-clearfix u-header u-palette-1-base u-header" id="sec-e42f"><div class="u-clearfix u-sheet u-sheet-1">
         <nav class="u-menu u-menu-dropdown u-offcanvas u-menu-1">
-          <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px;">
-            <a class="u-button-style u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-top-bottom-menu-spacing u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#">
+          <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px; font-weight: 700; text-transform: uppercase;">
+            <a class="u-button-style u-custom-active-border-color u-custom-border u-custom-border-color u-custom-borders u-custom-hover-border-color u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-text-active-color u-custom-text-color u-custom-text-hover-color u-custom-top-bottom-menu-spacing u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#">
               <svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#menu-hamburger"></use></svg>
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><symbol id="menu-hamburger" viewBox="0 0 16 16" style="width: 16px; height: 16px;"><rect y="1" width="16" height="2"></rect><rect y="7" width="16" height="2"></rect><rect y="13" width="16" height="2"></rect>
 </symbol>
@@ -44,30 +52,30 @@ use Backend\apibackend;
             </a>
           </div>
           <div class="u-custom-menu u-nav-container">
-            <ul class="u-nav u-unstyled u-nav-1"><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="index.html" style="padding: 10px 20px;">Home</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="About.html" style="padding: 10px 20px;">About</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Home.php" style="padding: 10px 20px;">User Home</a>
+            <ul class="u-nav u-spacing-30 u-unstyled u-nav-1"><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="index.html" style="padding: 10px 0px;">Home</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="About.html" style="padding: 10px 0px;">About</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="Contact-Us.html" style="padding: 10px 0px;">Contact Us</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="deposit.php" style="padding: 10px 0px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="Home.php" style="padding: 10px 0px;">Wallets</a>
 </li></ul>
           </div>
           <div class="u-custom-menu u-nav-container-collapse">
             <div class="u-black u-container-style u-inner-container-layout u-opacity u-opacity-95 u-sidenav">
               <div class="u-sidenav-overflow">
                 <div class="u-menu-close"></div>
-                <ul class="u-align-center u-nav u-popupmenu-items u-unstyled u-nav-2"><li class="u-nav-item"><a class="u-button-style u-nav-link" href="index.html" style="padding: 10px 20px;">Home</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="About.html" style="padding: 10px 20px;">About</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Home.php" style="padding: 10px 20px;">User Home</a>
+                <ul class="u-align-center u-nav u-popupmenu-items u-unstyled u-nav-2"><li class="u-nav-item"><a class="u-button-style u-nav-link" href="index.html" style="padding: 10px 0px;">Home</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="About.html" style="padding: 10px 0px;">About</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Contact-Us.html" style="padding: 10px 0px;">Contact Us</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.php" style="padding: 10px 0px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Home.php" style="padding: 10px 0px;">Wallets</a>
 </li></ul>
               </div>
             </div>
             <div class="u-black u-menu-overlay u-opacity u-opacity-70"></div>
           </div>
         </nav>
-        <a href="login.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-6 u-btn-1">Sign In</a>
-        <a href="register.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-6 u-btn-2">Get Started</a>
+        <a href="login.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-3-base u-radius-6 u-btn-1">Sign In</a>
+        <a href="register.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-3-base u-radius-6 u-btn-2">Get Started</a>
       </div></header>
     <section class="u-black u-clearfix u-section-1" id="sec-7bb0">
       <div class="u-clearfix u-sheet u-sheet-1">
@@ -77,8 +85,8 @@ use Backend\apibackend;
             <div class="u-layout-row">
               <div class="u-container-style u-layout-cell u-size-30 u-layout-cell-1">
                 <div class="u-border-2 u-border-grey-75 u-container-layout u-valign-top u-container-layout-1">
-                  <h5 class="u-text u-text-default u-text-2">Deposit Crypto</h5>
-                  <div class="u-clearfix u-custom-html u-custom-html-1"><!-- #!{php1} -->
+                  <h4 class="u-text u-text-2">Deposit Crypto</h4>
+                  <div class="u-align-left u-clearfix u-custom-html u-custom-html-1"><!-- #!{php1} -->
 <?php
 $b = new apibackend();
 
@@ -96,9 +104,11 @@ function make_balance_block($currency, $data)
 {
     ?>
     <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
+
         <?php
         $icons = '/resources/icons/';
-        echo "<a href=\"deposit.php?currency=$currency\"><img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if($currency != 'tok') { $link = "deposit.php?currency=$currency"; } else { $link = '#'; }
+        echo "<a href=$link><img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
         if($currency != 'tok') { $decimals = 8; } else { $decimals = 2; }
         if ($data->{$currency} != 'null') {
             echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
@@ -117,25 +127,28 @@ function make_balance_block($currency, $data)
 // make a block displaying balance data for each wallet
 echo "<nav style='height:750px;overflow:hidden; overflow-y:scroll;'><ul>";
 foreach ($balances->data as $key => $value) {
-    if($value != 'null') {
+    // don't show tok or non-existent wallets
+    if($value != 'null' && $key != 'tok') {
         make_balance_block($key, $balances->data);
     }
 }
-echo "</ul></nav>"
+echo "</ul></nav>";
 ?>
 </div>
                 </div>
               </div>
               <div class="u-container-style u-layout-cell u-size-30 u-layout-cell-2">
                 <div class="u-border-2 u-border-grey-75 u-container-layout u-valign-top u-container-layout-2">
-                  <h5 class="u-text u-text-default u-text-3">Deposit Tokens</h5>
+                  <h4 class="u-text u-text-3">Exchange USD for Tokens</h4>
                   <div class="u-clearfix u-custom-html u-custom-html-2"><!-- #!{php5} -->
 <?php
+// show token balance block
+make_balance_block('tok', $balances->data);
 ?>
 <div id="smart-button-container">
     <div style="text-align: center; color: black""><label for="description"> </label><input readonly type="hidden" name="descriptionInput" id="description" maxlength="127" value="Token Deposit"></div>
     <p id="descriptionError" style="visibility: hidden; color:red; text-align: center;">Please enter a description</p>
-    <div style="text-align: center; color: black"><label for="amount" style="color:white">Amount To Deposit </label><input name="amountInput" type="number" id="amount" value="" ><span> USD</span></div>
+<div style="text-align: center; color: whitesmoke"><label for="amount" style="color:white">Amount To Deposit </label><input style='color: #000000' name="amountInput" type="number" id="amount" value="" ><span> USD</span></div>
     <p id="priceLabelError" style="visibility: hidden; color:red; text-align: center;">Please enter a price</p>
     <div id="invoiceidDiv" style="text-align: center; display: none;"><label for="invoiceid"> </label><input name="invoiceid" maxlength="127" type="text" id="invoiceid" value="" ></div>
     <p id="invoiceidError" style="visibility: hidden; color:red; text-align: center;">Please enter an Invoice ID</p>
@@ -260,43 +273,13 @@ echo "</ul></nav>"
             </div>
           </div>
         </div>
-        <div class="u-clearfix u-layout-wrap u-layout-wrap-2">
-          <div class="u-layout">
-            <div class="u-layout-row">
-              <div class="u-container-style u-layout-cell u-size-18 u-layout-cell-3">
-                <div class="u-border-2 u-border-grey-75 u-container-layout u-valign-middle u-container-layout-3">
-                  <div class="u-clearfix u-custom-html u-custom-html-3"><!-- #!{php2} -->
-<?php
-if(isset($_GET['currency'])) {
-    $_SESSION['depositcurrency'] = $_GET['currency'];
-    echo "<p>Deposit into ".strtoupper($_SESSION['depositcurrency'])." wallet:</p>";
-} else {
-    echo "<p>Select a wallet to deposit into</p>";
-}
-?>
-</div>
-                </div>
-              </div>
-              <div class="u-container-style u-layout-cell u-size-42 u-layout-cell-4">
-                <div class="u-border-2 u-border-grey-75 u-container-layout u-container-layout-4">
-                  <div class="u-form u-form-1">
-                    <form action="deposit.php?submit=true" method="POST" class="u-clearfix u-form-custom-backend u-form-horizontal u-form-spacing-15 u-inner-form" style="padding: 15px" source="custom" redirect="true" name="idtest">
-                      <div class="u-form-group u-form-submit">
-                        <a href="#" class="u-btn u-btn-submit u-button-style u-btn-1">Deposit Crypto<br>
-                        </a>
-                        <input type="submit" value="submit" class="u-form-control-hidden">
-                      </div>
-                      <div class="u-form-send-message u-form-send-success">Thank you! Your message has been sent.</div>
-                      <div class="u-form-send-error u-form-send-message">Unable to send your message. Please fix errors then try again.</div>
-                      <input type="hidden" value="" name="recaptchaResponse">
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="u-clearfix u-custom-html u-custom-html-4"><!-- #!{php3} -->
+      </div>
+    </section>
+    <section class="u-black u-clearfix u-section-2" id="sec-a494">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <div class="u-border-2 u-border-grey-75 u-container-style u-group u-palette-5-dark-2 u-group-1">
+          <div class="u-container-layout u-container-layout-1">
+            <div class="u-clearfix u-custom-html u-custom-html-1"><!-- #!{php3} -->
 <?php
 if (isset($_GET['submit'])) {
     $b = new apibackend();
@@ -305,12 +288,14 @@ if (isset($_GET['submit'])) {
     if ($response->success == true) {
         // generate a new deposit address
         if(isset($_SESSION['depositcurrency'])) {
-            $deposit_address = $b->getnewaddress($_SESSION['depositcurrency'], $username, $sessionid);
+            $currency = $_SESSION['depositcurrency'];
+            $deposit_address = $b->getnewaddress($currency, $username, $sessionid);
+            unset($_SESSION['depositcurrency']);
             if($deposit_address->success == true) {
                 $_SESSION['newaddress'] = $deposit_address->data->newaddress;
                 $_SESSION['txnow'] = time();
                 $_SESSION['depositstatus'] = 'Waiting for deposit...';
-                $url = 'depositconfirm.php';
+                $url = "depositconfirm.php?currency=$currency";
                 \Redirect\redirect($url);
             }
         } else {
@@ -322,11 +307,31 @@ if (isset($_GET['submit'])) {
 }
 ?>
 </div>
-        <div class="u-clearfix u-custom-html u-custom-html-5"><!-- #!{php4} -->
+            <a href="deposit.php?submit=true" class="u-btn u-btn-round u-button-style u-custom-color-2 u-hover-custom-color-3 u-radius-50 u-btn-1">Deposit Crypto</a>
+            <div class="u-clearfix u-custom-html u-custom-html-2"><!-- #!{php2} -->
+<?php
+if(isset($_GET['currency'])) {
+    $_SESSION['depositcurrency'] = $_GET['currency'];
+    echo "<p>Deposit into ".strtoupper($_SESSION['depositcurrency'])." wallet</p>";
+} else {
+    echo "<p><i>Select a wallet to deposit into by clicking its icon above</i></p>";
+}
+?>
+</div>
+            <div class="u-clearfix u-custom-html u-custom-html-3"><!-- #!{php4} -->
 <?php
 if(isset($err)) {
-    echo "<p style=\"text-color:red\"> $err </p>";
+    echo "<p style='color:orangered; text-align: center'>error: $err </p>";
 }
+?>
+</div>
+          </div>
+        </div>
+        <div class="u-clearfix u-custom-html u-custom-html-4"><!-- #!{php6} -->
+<?php
+echo "<div style='font-weight: bold; color:whitesmoke' class='tooltip'>
+    <span class='tooltiptext'>?</span>
+</div>";
 ?>
 </div>
       </div>

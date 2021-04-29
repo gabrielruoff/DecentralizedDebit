@@ -7,6 +7,6 @@ $b = new apibackend();
     $transaction = $_POST['datastring'];
     echo $transaction;
     print_r(json_decode($transaction));
-    $response = $b->submittokendeposit($_SESSION['username'], $_SESSION['sessionid'], json_decode($transaction));
+    $response = $b->deposittokens($_SESSION['username'], $_SESSION['sessionid'], json_decode($transaction));
     print_r($response);
 //}

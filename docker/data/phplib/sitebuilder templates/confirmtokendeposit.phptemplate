@@ -32,8 +32,39 @@ if(isset($_GET['txid'])) {
 
     show_completed_deposit($transaction->data->tx);
 
+?>
+#{/php1}
+
+#{php2}
+<?php
+echo "<div align='center'>";
+echo "<a href='wallet.php?currency=TOK'><button style='
+background:    #15d798;
+border:        1px solid #556699;
+border-radius: 11px;
+padding:       20px 45px;
+color:         #ffffff;
+display:       inline-block;
+font:          normal bold 22px/1 \"Open Sans\", sans-serif;
+text-align:    center;
+display:       inline-block;
+margin-right:  20px'>View TOK Wallet</button></a>";
+
+echo "<a href='Home.php'><button style='
+background:    #15d798;
+border:        1px solid #556699;
+border-radius: 11px;
+padding:       20px 45px;
+color:         #ffffff;
+display:       inline-block;
+font:          normal bold 22px/1 \"Open Sans\", sans-serif;
+text-align:    center;
+display:       inline-block;
+margin-left:   20px'>Return to Home</button></a>";
+echo "</div>";
+
 } else {
     echo 'no transaction id';
 }
 ?>
-#{/php1}
+#{/php2}

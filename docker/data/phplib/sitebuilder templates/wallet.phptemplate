@@ -14,7 +14,7 @@ $sessionid = $_SESSION['sessionid'];
 
 #{php1}
 <?php
-$currency = $_GET['currency'];
+$currency = strtolower($_GET['currency']);
 // show coin logo
 $icons = '/resources/icons/';
 $_currency = strtoupper($currency);
@@ -34,8 +34,8 @@ function make_balance_block($currency, $data)
     ?>
     <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px; text-align: center;">
         <?php
-        echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
-        echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->balance_conf), $decimals) . " </p>";
+        echo "<p style=\"text-align: left; padding-left: 20px\"> Balance: </p>";
+        echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->balance_conf), $decimals) . " " . strtoupper($currency) . " </p>";
         echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->balance_unconf), $decimals) . " </p>";
         ?>
     </div>
@@ -68,7 +68,7 @@ foreach ($transactions as &$transaction) {
     }
 }
 
-function displaytransaction($transaction)
+function displaytransaction($transaction, $currency)
 {
     $statuscolor = 'orange';
     $statusstring = 'Pending';
@@ -76,19 +76,21 @@ function displaytransaction($transaction)
         $statuscolor = 'green';
         $statusstring = 'Confirmed';
     }
+    if($currency != 'tok') { $decimals = 8; } else { $decimals = 2; }
+    $amount = number_format(floatval($transaction->amount), $decimals);
     echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; width: 400px;\">";
     echo "<p style=\"text-align: left; padding-left: 15px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
     echo "<p style=\"text-align: left; padding-left: 30px; color: $statuscolor\">Status: $statusstring</p>";
-    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: $transaction->amount </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: $amount </p>";
     echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Received at: $transaction->time </p>";
-    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
-    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>";
+    if($currency != 'tok') { echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>"; }
     echo "</div><br>";
 }
 
 // display received
 foreach ($receive as &$received) {
-    displaytransaction($received);
+    displaytransaction($received, $currency);
 }
 ?>
 #{/php3}
@@ -97,7 +99,7 @@ foreach ($receive as &$received) {
 <?php
 // display sent
 foreach ($send as &$sent) {
-    displaytransaction($sent);
+    displaytransaction($sent, $currency);
 }
 ?>
 #{/php4}

@@ -1,6 +1,7 @@
 <!-- #!{head} -->
 <?php
 session_start();
+include('/usr/local/php/lib/require_logged_in.php');
 require_once('/usr/local/php/lib/Backend.php');
 
 use Backend\apibackend;
@@ -33,11 +34,17 @@ use Backend\apibackend;
     <meta name="theme-color" content="#478ac9">
     <link rel="canonical" href="index.html">
     <meta property="og:url" content="index.html">
-  </head>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff"</head>
   <body class="u-body"><header class="u-clearfix u-header u-palette-1-base u-header" id="sec-e42f"><div class="u-clearfix u-sheet u-sheet-1">
         <nav class="u-menu u-menu-dropdown u-offcanvas u-menu-1">
-          <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px;">
-            <a class="u-button-style u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-top-bottom-menu-spacing u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#">
+          <div class="menu-collapse" style="font-size: 1rem; letter-spacing: 0px; font-weight: 700; text-transform: uppercase;">
+            <a class="u-button-style u-custom-active-border-color u-custom-border u-custom-border-color u-custom-borders u-custom-hover-border-color u-custom-left-right-menu-spacing u-custom-padding-bottom u-custom-text-active-color u-custom-text-color u-custom-text-hover-color u-custom-top-bottom-menu-spacing u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="#">
               <svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#menu-hamburger"></use></svg>
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><symbol id="menu-hamburger" viewBox="0 0 16 16" style="width: 16px; height: 16px;"><rect y="1" width="16" height="2"></rect><rect y="7" width="16" height="2"></rect><rect y="13" width="16" height="2"></rect>
 </symbol>
@@ -45,30 +52,30 @@ use Backend\apibackend;
             </a>
           </div>
           <div class="u-custom-menu u-nav-container">
-            <ul class="u-nav u-unstyled u-nav-1"><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="index.html" style="padding: 10px 20px;">Home</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="About.html" style="padding: 10px 20px;">About</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-palette-1-base u-text-hover-palette-2-base" href="Home.php" style="padding: 10px 20px;">User Home</a>
+            <ul class="u-nav u-spacing-30 u-unstyled u-nav-1"><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="index.html" style="padding: 10px 0px;">Home</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="About.html" style="padding: 10px 0px;">About</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="Contact-Us.html" style="padding: 10px 0px;">Contact Us</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="deposit.php" style="padding: 10px 0px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-border-2 u-border-active-palette-1-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-button-style u-nav-link u-text-active-white u-text-hover-palette-5-light-3" href="Home.php" style="padding: 10px 0px;">Wallets</a>
 </li></ul>
           </div>
           <div class="u-custom-menu u-nav-container-collapse">
             <div class="u-black u-container-style u-inner-container-layout u-opacity u-opacity-95 u-sidenav">
               <div class="u-sidenav-overflow">
                 <div class="u-menu-close"></div>
-                <ul class="u-align-center u-nav u-popupmenu-items u-unstyled u-nav-2"><li class="u-nav-item"><a class="u-button-style u-nav-link" href="index.html" style="padding: 10px 20px;">Home</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="About.html" style="padding: 10px 20px;">About</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Contact-Us.html" style="padding: 10px 20px;">Contact Us</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.php" style="padding: 10px 20px;">Deposit</a>
-</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Home.php" style="padding: 10px 20px;">User Home</a>
+                <ul class="u-align-center u-nav u-popupmenu-items u-unstyled u-nav-2"><li class="u-nav-item"><a class="u-button-style u-nav-link" href="index.html" style="padding: 10px 0px;">Home</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="About.html" style="padding: 10px 0px;">About</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Contact-Us.html" style="padding: 10px 0px;">Contact Us</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="deposit.php" style="padding: 10px 0px;">Deposit</a>
+</li><li class="u-nav-item"><a class="u-button-style u-nav-link" href="Home.php" style="padding: 10px 0px;">Wallets</a>
 </li></ul>
               </div>
             </div>
             <div class="u-black u-menu-overlay u-opacity u-opacity-70"></div>
           </div>
         </nav>
-        <a href="login.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-6 u-btn-1">Sign In</a>
-        <a href="register.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-6 u-btn-2">Get Started</a>
+        <a href="login.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-3-base u-radius-6 u-btn-1">Sign In</a>
+        <a href="register.php" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-3-base u-radius-6 u-btn-2">Get Started</a>
       </div></header>
     <section class="u-align-left u-black u-clearfix u-section-1" id="sec-f0d0">
       <div class="u-clearfix u-sheet u-sheet-1">
@@ -85,6 +92,8 @@ echo "<h1> Welcome, $username </h1>";
                 <div class="u-layout-col">
                   <div class="u-align-left u-black u-container-style u-layout-cell u-size-60 u-layout-cell-1">
                     <div class="u-border-2 u-border-grey-75 u-container-layout u-container-layout-1">
+                      <h4 class="u-text u-text-1">Wallets</h4>
+                      <h4 class="u-text u-text-2">Tokens</h4>
                       <div class="u-clearfix u-custom-html u-custom-html-2"><!-- #!{php2} -->
 <?php
 $b = new apibackend();
@@ -118,9 +127,19 @@ function make_balance_block($currency, $data)
 <?php }
 
 // make a block displaying balance data for each wallet
+echo "<nav style='height:750px;overflow:hidden; overflow-y:scroll; background: transparent'><ul>";
 foreach ($balances->data as $key => $value) {
-    make_balance_block($key, $balances->data);
+    if($key != 'tok') {
+        make_balance_block($key, $balances->data);
+    }
 }
+echo "</ul></nav>";
+?>
+</div>
+                      <div class="u-clearfix u-custom-html u-custom-html-3"><!-- #!{php4} -->
+<?php
+# make a token balance block
+make_balance_block('tok', $balances->data);
 ?>
 </div>
                     </div>
@@ -131,14 +150,40 @@ foreach ($balances->data as $key => $value) {
                 <div class="u-layout-col">
                   <div class="u-align-left u-black u-container-style u-layout-cell u-size-30 u-layout-cell-2">
                     <div class="u-border-2 u-border-grey-75 u-container-layout u-container-layout-2">
-                      <h6 class="u-text u-text-default u-text-1">Account<span style="text-decoration: underline !important;"></span>
+                      <h6 class="u-text u-text-3">Account<span style="text-decoration: underline !important;"></span>
                       </h6>
                       <a href="https://nicepage.com/website-templates" class="u-btn u-btn-round u-button-style u-hover-palette-1-light-1 u-palette-1-base u-radius-50 u-btn-1">Settings</a>
+                      <a href="lib/_logout.php" class="u-btn u-btn-round u-button-style u-hover-palette-2-light-1 u-palette-2-base u-radius-50 u-btn-2">Logout</a>
                     </div>
                   </div>
                   <div class="u-container-style u-layout-cell u-palette-1-base u-size-30 u-layout-cell-3">
-                    <div class="u-border-2 u-border-grey-75 u-container-layout u-container-layout-3">
-                      <h6 class="u-text u-text-2">History</h6>
+                    <div class="u-border-2 u-border-grey-75 u-container-layout u-valign-top u-container-layout-3">
+                      <h6 class="u-text u-text-4">History</h6>
+                      <div class="u-clearfix u-custom-html u-custom-html-4"><!-- #!{php3} -->
+<?php
+$sessionid = $_SESSION['sessionid'];
+$transactions = $b->listtransactions('apitest', 'tok', $sessionid)->data->transactions;
+function displaytransaction($transaction) {
+    $statuscolor = 'red';
+    $statusstring = 'Pending';
+    if($transaction->confirmations >= 10) { $statuscolor = 'green'; $statusstring = 'Confirmed'; }
+    echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; background-color: black; width: 200px;\">";
+    echo "<p style=\"text-align: left; padding-left: 15px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: $statuscolor\">Status: $statusstring</p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: $transaction->amount </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Received at: $transaction->time </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>";
+    echo "</div><br>";
+}
+
+echo "<nav style='height:750px;overflow:hidden; overflow-y:scroll; background: transparent'><ul>";
+foreach($transactions as &$transaction) {
+    displaytransaction($transaction);
+}
+echo "</ul></nav>";
+?>
+</div>
                     </div>
                   </div>
                 </div>
@@ -148,8 +193,8 @@ foreach ($balances->data as $key => $value) {
         </div>
         <div class="u-black u-border-2 u-border-grey-75 u-container-style u-expanded-width u-group u-group-1">
           <div class="u-container-layout u-container-layout-4">
-            <a href="deposit.php" class="u-border-2 u-border-hover-palette-4-light-2 u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-2">Deposit</a>
-            <a href="withdraw.php" class="u-border-2 u-border-hover-palette-4-light-2 u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-3">Withdraw</a>
+            <a href="deposit.php" class="u-border-2 u-border-hover-palette-4-light-2 u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-3">Deposit</a>
+            <a href="withdraw.php" class="u-border-2 u-border-hover-palette-4-light-2 u-border-palette-4-base u-btn u-btn-round u-button-style u-none u-radius-50 u-text-palette-4-base u-btn-4">Withdraw</a>
           </div>
         </div>
       </div>

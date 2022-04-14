@@ -63,7 +63,7 @@ void loop() {
       return;
 
     MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
-    //  Serial.println(mfrc522.PICC_GetTypeName(piccType));
+      Serial.println(mfrc522.PICC_GetTypeName(piccType));
 
     // Check for compatibility
     if (    piccType != MFRC522::PICC_TYPE_MIFARE_MINI

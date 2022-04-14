@@ -1,10 +1,3 @@
 #.env
 venv*/
 .idea
-processTxFromCard.py
-readDataFromCard.py
-socktest.py
-socktest2.py
-writeDataToCard.py
-Server.py
-Terminal.py

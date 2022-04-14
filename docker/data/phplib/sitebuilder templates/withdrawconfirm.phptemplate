@@ -1,0 +1,85 @@
+#{head}
+<?php
+session_start();
+include('/usr/local/php/lib/require_logged_in.php');
+require_once('/usr/local/php/lib/Backend.php');
+use Backend\apibackend;
+
+$b = new apibackend();
+?>
+#{/head}
+
+#{php1}
+<?php
+if(isset($_GET['status'])) {
+    if($_GET['status'] == 'success') {
+        $h2 = 'Withdrawl Successful';
+    } else {
+        $h2 = 'Transaction Error';
+        $err = $_GET['status'];
+    }
+} else {
+    $h2 = 'Error';
+    $err = 'No Withdrawl Specified';
+}
+$currency = $_GET['currency'];
+echo "<h1 style=\"text-align: left; padding-left: 30px;\">$h2</h1>";
+?>
+#{/php1}
+
+#{php2}
+<?php
+if(isset($err)) {
+    echo "<h3 style=\"text-align: left; padding-left: 30px; color: orangered\">$err</h3>";
+} else {
+    function displaytransaction($transaction, $currency)
+    {
+        $statuscolor = 'orange';
+        $statusstring = 'Pending';
+        if ($transaction->confirmations >= 10) {
+            $statuscolor = 'green';
+            $statusstring = 'Confirmed';
+        }
+        if($currency != 'tok') { $decimals = 8; $pref = ''; } else { $decimals = 2; $pref = '$'; }
+        $amount = $pref . strval(number_format(floatval($transaction->amount), $decimals));
+        echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; width: 400px;\">";
+        echo "<p style=\"text-align: left; padding-left: 15px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
+        echo "<p style=\"text-align: left; padding-left: 30px; color: $statuscolor\">Status: $statusstring</p>";
+        echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: $amount </p>";
+        echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Received at: $transaction->time </p>";
+        if($currency != 'tok') { echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
+            echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>"; }
+        echo "</div><br>";
+    }
+
+        $transactions = $b->listtransactions('apitest', $currency, $_SESSION['sessionid'])->data->transactions;
+        displaytransaction($transactions[0], $currency);
+}
+echo "<br><br>";
+echo "<div align='center'>";
+echo "<a href='/withdraw.php?currency=$currency'><button style='
+background:    #15d798;
+border:        1px solid #556699;
+border-radius: 11px;
+padding:       20px 45px;
+color:         #ffffff;
+display:       inline-block;
+font:          normal bold 22px/1 \"Open Sans\", sans-serif;
+text-align:    center;
+display:       inline-block;
+margin-right:  20px'>Back to Withdraw</button></a>";
+
+echo "<a href='Home.php'><button style='
+background:    #15d798;
+border:        1px solid #556699;
+border-radius: 11px;
+padding:       20px 45px;
+color:         #ffffff;
+display:       inline-block;
+font:          normal bold 22px/1 \"Open Sans\", sans-serif;
+text-align:    center;
+display:       inline-block;
+margin-left:   20px'>Return to Home</button></a>";
+echo "</div>";
+?>
+#{/php2}

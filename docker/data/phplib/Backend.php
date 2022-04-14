@@ -91,6 +91,30 @@ class apibackend
         return $this->_request('Merchant/'.$username, $body);
     }
 
+    public function withdrawcrypto($username, $sessionid, $rx, $amount, $currency) {
+        $params = ['session_id' => $sessionid, 'tx' => $username, 'rx' => $rx, 'amount' => $amount];
+        $body = ["method" => "withdrawcrypto", "body" => $params];
+        return $this->_request('Wallet/'.$username.'/'.$currency, $body);
+    }
+
+    public function deposittokens($username, $sessionid, $tx) {
+        $params = ["session_id" => $sessionid, "tx" => $tx];
+        $body = ["method" => "deposittokens", "body" => $params];
+        return $this->_request('Wallet/'.$username.'/tok', $body);
+    }
+
+    public function withdrawtokens($username, $sessionid, $destination, $amount) {
+        $params = ["session_id" => $sessionid, "destination" => $destination, "amount" => $amount];
+        $body = ["method" => "withdrawtokens", "body" => $params];
+        return $this->_request('Wallet/'.$username.'/tok', $body);
+    }
+
+        public function gettokentransaction($username, $sessionid, $txid) {
+        $params = ["session_id" => $sessionid, "txid" => $txid];
+        $body = ["method" => "gettokentransaction", "body" => $params];
+        return $this->_request('Merchant/'.$username, $body);
+    }
+
     public function generatesessionid($username, $password) {
         $params = ["password" => $password];
         $body = ["method" => "generatesessionid", "body" => $params];
@@ -100,6 +124,12 @@ class apibackend
     public function validatesession($username, $sessionid) {
         $params = ["session_id" => $sessionid];
         $body = ["method" => "validatesession", "body" => $params];
+        return $this->_request('Account/'.$username, $body);
+    }
+
+    public function destorysession($username, $sessionid) {
+        $params = ["session_id" => $sessionid];
+        $body = ["method" => "destroysession", "body" => $params];
         return $this->_request('Account/'.$username, $body);
     }
 

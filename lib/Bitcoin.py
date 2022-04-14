@@ -43,13 +43,15 @@ class bitcoinrpc:
         print(balance[0])
         return balance[0]
 
-    def sendtoaddress(self, tx_wallet_name, rx, amount, wallet_password=None):
+    def sendtoaddress(self, tx_wallet_name, rx_address, amount, wallet_password=None):
         self._loadwallet(tx_wallet_name)
-        commands = [ ["sendtoaddress", rx, amount ]]
+        commands = [ ["sendtoaddress", rx_address, amount, '', '', True ]]
         try:
             send = self.rpc_connection.batch_(commands)
         except JSONRPCException as e:
-            return False
+            self._unloadwallet(tx_wallet_name)
+            print(str(e))
+            return str(e)
         self._unloadwallet(tx_wallet_name)
         print(send)
         return True

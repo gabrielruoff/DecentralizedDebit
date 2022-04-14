@@ -1,13 +1,14 @@
 #{head}
 <?php
-ob_implicit_flush(true);
+//ob_implicit_flush(true);
 session_start();
 require_once('/usr/local/php/lib/Backend.php');
 use Backend\apibackend;
 use Redirect;
 $b = new apibackend();
 $sessionid = $_SESSION['sessionid'];
-$transactions = $b->listtransactions('apitest', 'btc', $sessionid)->data->transactions;
+$currency = $_GET['currency'];
+$transactions = $b->listtransactions('apitest', $currency, $sessionid)->data->transactions;
 
 //echo $_SESSION['depositconfirmpagestatus'];
 if($_SESSION['depositconfirmpagestatus'] != 'wait' && $_SESSION['depositconfirmpagestatus'] != 'show') {
@@ -21,7 +22,7 @@ if($_SESSION['depositconfirmpagestatus'] != 'wait' && $_SESSION['depositconfirmp
 $_SESSION['txnow'] = 0;
 #/exclude
 
-function btc_displayincomingtransaction($transaction) {
+function displayincomingtransaction($transaction) {
     $statuscolor = 'red';
     $statusstring = 'Pending';
     if($transaction->confirmations >= 10) { $statuscolor = 'green'; $statusstring = 'Confirmed'; }
@@ -40,8 +41,8 @@ function btc_displayincomingtransaction($transaction) {
 #{php2}
 <?php
 if($_SESSION['depositconfirmpagestatus'] == 'show') { $depositstatus = 'Incoming Deposit:'; }
-else { $depositstatus = 'Waiting for deposit...'; }
-echo "<h2 style=\"text-align: left; padding-left: 30px;\">".$depositstatus."</h2>";
+else { $currency_up = strtoupper($currency); $depositstatus = "Waiting for $currency_up deposit..."; }
+echo "<h2 style=\"text-align: left; padding-left: 30px;\">$depositstatus</h2>";
 ?>
 #{/php2}
 
@@ -50,9 +51,8 @@ echo "<h2 style=\"text-align: left; padding-left: 30px;\">".$depositstatus."</h2
         $switch = false;
         foreach ($transactions as &$transaction) {
             if ($transaction->category == 'receive' && floatval($transaction->time) >= $_SESSION['txnow']) {
-                print_r($transaction);
                 if($_SESSION['depositconfirmpagestatus'] == 'show') {
-                    btc_displayincomingtransaction($transaction);
+                    displayincomingtransaction($transaction);
                     $switch = true;
                 } else {
                     echo $_SESSION['depositconfirmpagestatus'];
@@ -88,8 +88,8 @@ if($_SESSION['depositconfirmpagestatus'] == 'wait') {
 #{foot}
 <?php
         if($_SESSION['depositconfirmpagestatus'] == 'wait') {
-            ob_flush();
-            ob_end_clean();
+//            ob_flush();
+//            ob_end_clean();
             sleep(15);
             Redirect\redirect('');
             exit();

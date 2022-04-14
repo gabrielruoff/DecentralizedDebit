@@ -1,0 +1,37 @@
+          if (J='0') then
+              if (K='0') then
+				if(Qn='0') then
+					Q <= '0';
+				end if;
+				if(Qn='1') then
+					Q <= '1';
+				end if;
+			end if;
+			if(K='1') then
+				if(Qn='0') then
+				Q <= '0';
+				end if;
+				if(Qn='1') then
+				Q <= '1';
+				end if;
+			end if;
+          end if;
+		  
+          if (J='1') then
+              if (K='0') then
+				if(Qn='0') then
+					Q <= '1';
+				end if;
+				if(Qn='1') then
+					Q <= '1';
+				end if;
+			end if;
+			if(K='1') then
+				if(Qn='0') then
+				Q <= '1';
+				end if;
+				if(Qn='1') then
+				Q <= '0';
+				end if;
+			end if;
+          end if;

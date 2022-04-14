@@ -66,7 +66,9 @@ class account():
     def validatesession(self, username, data):
         with _backend() as b:
             if b._validate_session(data['session_id']):
+                print('tru')
                 return b._build_api_response(True)
+            print('fasl')
             return b._build_api_response(False, 'invaildsessionid')
 
     def createwalletbtc(self, username, data):
@@ -122,6 +124,50 @@ class wallet():
                 return func(username)
             return b._build_api_response(False, 'invalidsessionsid')
 
+    def withdrawcrypto(self, username, currency, data):
+        try:
+            # validate credentials
+            with _backend() as b:
+                if b._validate_session(data['session_id']):
+                    func = getattr(b, '_withdraw_crypto_' + currency)
+                    return func(username, data['rx'], data['amount'])
+                return b._build_api_response(False, 'invaildsessionid')
+        except AttributeError as e:
+            print(str(e))
+            return b._build_api_response(False, err='invalid currency \'' + str(currency)+'\'')
+
+    def sendoffchain(self, username, currency, data):
+        try:
+            # validate credentials
+            with _backend() as b:
+                if b._validate_session(data['session_id']):
+                    func = getattr(b, 'sendoffchain_' + currency)
+                    return func(username, data['rx'], data['amount'])
+                return b._build_api_response(False, 'invaildsessionid')
+        except AttributeError as e:
+            print(str(e))
+            return b._build_api_response(False, err='invalid currency \'' + str(currency)+'\'')
+
+    def deposittokens(self, username, currency, data):
+        # validate credentials
+        print(data['origin'])
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                if b._validate_trusted_ip(data['origin']):
+                    tx = data['tx']
+                    return b._confirm_token_deposit(username, tx)
+                return b._build_api_response(False, 'invalid origin ip')
+            return b._build_api_response(False, 'invaildsessionid')
+
+    def withdrawtokens(self, username, currency, data):
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                if b._validate_trusted_ip(data['origin']):
+                    destination = data['destination']
+                    amount = data['amount']
+                    return b._confirm_token_withdrawl(username, amount, destination)
+                return b._build_api_response(False, 'invalid origin ip')
+            return b._build_api_response(False, 'invaildsessionid')
 
 class merchant():
     def __enter__(self):
@@ -129,7 +175,7 @@ class merchant():
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def submittransaction(self, username, data):
+    def submittransaction(self, username, data, origin):
         # validate credentials
         with _backend() as b:
             if b._validate_session(data['session_id']):
@@ -137,4 +183,11 @@ class merchant():
                                                          data['password'], username)
                 tx.decrypt(b._get_master_priv_keyfile(), b._get_master_key_pass())
                 return b.process_transaction(tx)
+            return b._build_api_response(False, 'invaildsessionid')
+
+    def gettokentransaction(self, username, data, origin):
+        with _backend() as b:
+            if b._validate_session(data['session_id']):
+                txid = data['txid']
+                return b._get_token_transaction_by_txid(txid)
             return b._build_api_response(False, 'invaildsessionid')

@@ -1,0 +1,333 @@
+#{head}
+<?php
+session_start();
+include('/usr/local/php/lib/require_logged_in.php');
+require_once('/usr/local/php/lib/Backend.php');
+use Backend\apibackend;
+?>
+#{/head}
+
+#{php1}
+<?php
+$b = new apibackend();
+
+#exclude
+require_once('../Backend.php');
+$_SESSION['username'] = 'apitest';
+$password = 'test2';
+$_SESSION['sessionid'] = $b->generatesessionid($_SESSION['username'], $password)->data->session_id;
+#/exclude
+
+$username = $_SESSION['username'];
+$sessionid = $_SESSION['sessionid'];
+$currency = '*';
+$response = $b->validatesession($username, $sessionid);
+if ($response->success == false) {
+    Redirect\redirect('login.php');
+}
+$balances = $b->getbalance($username, $currency, $_SESSION['sessionid']);
+
+function make_balance_block($currency, $data)
+{
+    ?>
+    <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
+
+        <?php
+        $icons = '/resources/icons/';
+        if($currency != 'tok') { $link = "withdraw.php?currency=$currency"; } else { $link = '#'; }
+        echo "<a href=$link><img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if($currency != 'tok') { $decimals = 8; } else { $decimals = 2; }
+        if ($data->{$currency} != 'null') {
+            echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), $decimals) . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), $decimals)  . " </p></a>";
+        } else {
+            echo "<p> No " . strtoupper($currency) . " Wallet </p>";
+        }
+        ?>
+    </div>
+    <br>
+    <span class="stretch"></span>
+<?php } ?>
+
+<?php
+// make a block displaying balance data for each wallet
+echo "<nav style='height:750px;overflow:hidden; overflow-y:scroll;'><ul>";
+foreach ($balances->data as $key => $value) {
+    // don't show tok or non-existent wallets
+    if($value != 'null' && $key != 'tok') {
+        make_balance_block($key, $balances->data);
+    }
+}
+echo "</ul></nav>";
+?>
+#{/php1}
+
+#{php2}
+<?php
+echo "<style>
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+.wrapper{
+width: 450px;
+    height: 425px;
+    background: #555D67;
+  padding: 30px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.wrapper .input-data{
+ margin-top: 40px;
+  height: 40px;
+  width: 100%;
+  position: relative;
+}
+.wrapper .input-data input{
+  height: 100%;
+  width: 100%;
+  border: none;
+  font-size: 17px;
+  border-bottom: 2px solid silver;
+}
+.input-data input:focus ~ label,
+.input-data input:valid ~ label{
+  transform: translate(-15px, -37px);
+  font-size: 30px;
+  font-weight: bold;
+  color: whitesmoke;
+}
+.wrapper .input-data label{
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  color: grey;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+.input-data .underline{
+  position: absolute;
+  height: 2px;
+  width: 75%;
+  bottom: 5px;
+}
+.input-data .underline:before{
+  position: absolute;
+  content: '';
+  height: 100%;
+  width: 100%;
+  background: #4158d0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+.input-data input:focus ~ .underline:before,
+.input-data input:valid ~ .underline:before{
+  transform: scaleX(1);
+}
+</style>";
+// show token balance block
+make_balance_block('tok', $balances->data);
+?>
+#{/php2}
+
+#{php3}
+<?php
+$max = $balances->data->{$_GET['currency']}->balance_conf;
+echo "
+<form method='post' id='withdrawform' action='/withdraw.php'>
+    <div class='wrapper'>
+      <div class='input-data' style='top: 50px;'>
+        <input type='number' id='amount' name='amount' autocomplete='off' style='color:black' max='$max' required>
+        <div class='underline'>
+</div>
+
+
+<label>"; ?>
+<script>
+    var $_GET = <?php echo json_encode($_GET); ?>;
+    if (typeof $_GET['currency'] != 'undefined') {
+        document.write($_GET['currency'].toUpperCase() + ' Quantity');
+    } else {
+        document.write("Select a Currency to Withdraw")
+    }
+</script>
+</label></input><div>
+</div>
+<br>
+<?php
+//receiving address
+echo "
+      <div class='input-data' style='top: 20px;'>
+        <input type='text' id='rxaddress' name='rxaddress' autocomplete='off' style='color:black' required>
+        <div class='underline'>
+</div>
+<label>"; ?>
+<script>
+    var $_GET = <?php echo json_encode($_GET); ?>;
+    if (typeof $_GET['currency'] != 'undefined') {
+        document.write($_GET['currency'].toUpperCase() + ' Withdrawl Address');
+    } else {
+        document.write("Withdrawl Address")
+    }
+</script>
+</label>
+<br><br><br>
+<input type="submit"; id="submit"; name="submit"; style="display: block;
+  margin-right: auto;
+  margin-left: auto;
+  background-color: #1BF185;
+  letter-spacing: 3px;
+  border-radius: 50px;
+  font-weight: bold;
+  color: black;
+  font-family:
+  sans-serif;
+  font-size: 16px;
+  height: 64px;
+  width: 268px" value="WITHDRAW CRYPTO">
+</form>
+<?php
+
+if (isset($_POST['submit'])) {
+//    print_r($_POST);
+    $b = new apibackend();
+    $username = $_SESSION['username'];
+    $response = $b->validatesession($username, $sessionid);
+    if ($response->success == true) {
+        if(isset($_SESSION['withdrawlcurrency'])) {
+            $rx = trim($_POST['rxaddress']);
+            $amount = trim($_POST['amount']);
+            $currency = $_SESSION['withdrawlcurrency'];
+            $withdrawl = $b->withdrawcrypto($username, $sessionid, $rx, $amount, $currency);
+            unset($_SESSION['withdrawlcurrency']);
+            if($withdrawl->success == true) {
+                $_SESSION['txnow'] = time();
+                $url = "withdrawconfirm.php?currency=$currency&status=success";
+            } else {
+                echo $withdrawl->err;
+                $url = "withdrawconfirm.php?currency=$currency&status=$withdrawl->err";
+            }
+//            redirect to confirmation page
+            \Redirect\redirect($url);
+        } else {
+            $err = "No currency selected";
+        }
+
+    } else {
+        $err = "invalid session";}
+}
+?>
+#{/php3}
+
+#{php4}
+<?php
+if(isset($err)) {
+    echo "<p style='color:orangered; text-align: center'>error: $err </p>";
+}
+?>
+#{/php4}
+
+#{php5}
+<?php
+
+// assign onclick to button after creation
+?>
+<script>
+    document.getElementsByClassName('u-border-0 u-btn u-btn-round u-button-style u-custom-color-2 u-hover-custom-color-3 u-radius-50 u-btn-1').onclick = function() { document.getElementById('withdrawform').submit(); }
+</script>
+<?php
+if(isset($_GET['currency'])) {
+    $_SESSION['withdrawlcurrency'] = $_GET['currency'];
+    echo "<p>Withdraw from ".strtoupper($_SESSION['withdrawlcurrency'])." wallet</p>";
+} else {
+    echo "<p><i>Select a wallet to withdraw from by clicking its icon above</i></p>";
+}
+?>
+#{/php5}
+
+#{php6}
+<?php
+$max = $balances->data->tok->balance_conf;
+?>
+<div class='wrapper' style="width: 485px; height: 450px; padding: 30px; margin-top: 10px;">
+
+    <form method='post' id='tokenwithdrawform' action='/withdraw.php'>
+        <div id="smart-button-container">
+            <div style="text-align: center; color: black">
+                <div class='input-data' style="bottom: 15px">
+                    <input type='number' id='amount' name='amount' autocomplete='off' style='color:black' max='<?php echo $max; ?>' required>
+                    <div class='underline'>
+                    </div>
+                    <label for="amount">Amount To Withdraw </label>
+                </div>
+            </div>
+
+            <div style="text-align: center; color: black">
+                <div class='input-data' style="bottom: 15px">
+                    <input type='text' id='destination' name='destination' autocomplete='off' style='color:black' required>
+                    <div class='underline'>
+                    </div>
+                    <label for="destination">PayPal Email Address</label>
+                </div>
+            </div>
+
+            <div style="text-align: center; color: black">
+                <div class='input-data' style="bottom: 0px">
+                    <input type='text' id='destinationconfirm' name='destinationconfirm' autocomplete='off' style='color:black' required>
+                    <div class='underline'>
+                    </div>
+                    <label for="destinationconfirm">Confirm PayPal Email Address</label>
+                </div>
+            </div>
+
+            <br>
+            <input type="submit" id="submit" name="withdrawsubmit" style="
+            display: block;
+          margin-right: auto;
+          margin-left: auto;
+          background-color: #1BF185;
+          letter-spacing: 3px;
+          border-radius: 50px;
+          font-weight: bold;
+          color: black;
+          font-family:
+          sans-serif;
+          font-size: 16px;
+          height: 64px;
+          width: 268px" value="WITHDRAW TOKENS">
+
+        </div>
+    </form>
+</div>
+<?php
+if(isset($_POST['withdrawsubmit'])) {
+    if(trim($_POST['destination']) == trim($_POST['destinationconfirm'])) {
+        $b = new apibackend();
+        $username = $_SESSION['username'];
+        $response = $b->validatesession($username, $sessionid);
+        if ($response->success == true) {
+            $currency = 'tok';
+            $amount = trim($_POST['amount']);
+            if($amount <= $balances->data->{$currency}) {
+                $withdrawl = $b->withdrawtokens($username, $sessionid, trim($_POST['destination']), $amount);
+                unset($_SESSION['withdrawlcurrency']);
+                print_r($withdrawl);
+                if ($withdrawl->success == true) {
+
+                    $url = "withdrawconfirm.php?currency=$currency&status=success";
+                } else {
+                    echo $withdrawl->err;
+                    $url = "withdrawconfirm.php?currency=$currency&status=$withdrawl->err";
+                }
+//            redirect to confirmation page
+                \Redirect\redirect($url);
+            } else {
+                $err = "Insufficient Balance";
+            }
+        } else {
+            $err = "invalid session";
+        }
+    } else {
+        $err = "Paypal Email addresses do not match";
+    }
+}
+?>
+#{/php6}

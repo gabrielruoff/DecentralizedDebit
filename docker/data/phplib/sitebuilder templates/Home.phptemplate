@@ -1,6 +1,7 @@
 #{head}
 <?php
 session_start();
+include('/usr/local/php/lib/require_logged_in.php');
 require_once('/usr/local/php/lib/Backend.php');
 
 use Backend\apibackend;
@@ -34,15 +35,17 @@ function make_balance_block($currency, $data)
     <div align="center" style="border-style: solid; border-radius: 15px; border-color: aqua; width: 200px;">
         <?php
         $icons = '/resources/icons/';
-        echo "<a href=\"wallet.php?currency=$currency\">";
-        echo "<img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        echo "<a href=\"wallet.php?currency=$currency\"><img style=\"width: 175px; height: 175px; padding: 10px\" src=\"" . $icons . $currency . '.png' . "\"/>";
+        if($currency != 'tok') { $decimals = 8; } else { $decimals = 2; }
         if ($data->{$currency} != 'null') {
             echo "<p style=\"text-align: left; padding-left: 20px\"> " . strtoupper($currency) . " Balance: </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), 8) . " </p>";
-            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), 8)  . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px\"> Confirmed: " . number_format(floatval($data->{$currency}->balance_conf), $decimals) . " </p>";
+            echo "<p style=\"text-align: left; padding-left: 20px; color: gray\"> Unconfirmed: " . number_format(floatval($data->{$currency}->balance_unconf), $decimals)  . " </p>";
             echo "</a>";
         } else {
+            echo "<a href=\"deposit.php?currency=$currency\">";
             echo "<p> No " . strtoupper($currency) . " Wallet </p>";
+            echo "</a>";
         }
         ?>
     </div>
@@ -51,8 +54,45 @@ function make_balance_block($currency, $data)
 <?php }
 
 // make a block displaying balance data for each wallet
+echo "<nav style='height:750px;overflow:hidden; overflow-y:scroll; background: transparent'><ul>";
 foreach ($balances->data as $key => $value) {
-    make_balance_block($key, $balances->data);
+    if($key != 'tok') {
+        make_balance_block($key, $balances->data);
+    }
 }
+echo "</ul></nav>";
 ?>
 #{/php2}
+
+#{php3}
+<?php
+$sessionid = $_SESSION['sessionid'];
+$transactions = $b->listtransactions('apitest', 'tok', $sessionid)->data->transactions;
+function displaytransaction($transaction) {
+    $statuscolor = 'red';
+    $statusstring = 'Pending';
+    if($transaction->confirmations >= 10) { $statuscolor = 'green'; $statusstring = 'Confirmed'; }
+    echo "<div align=\"center\" style=\"border-style: solid; border-radius: 15px; border-color: aqua; background-color: black; width: 200px;\">";
+    echo "<p style=\"text-align: left; padding-left: 15px; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;\">Transaction: $transaction->txid </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: $statuscolor\">Status: $statusstring</p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Amount: $transaction->amount </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Received at: $transaction->time </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- Confirmations: $transaction->confirmations </p>";
+    echo "<p style=\"text-align: left; padding-left: 30px; color: gray\">- View on <a href='https://www.blockchain.com/btc/tx/$transaction->txid'; target='_blank'>Blockchain.com</a></p>";
+    echo "</div><br>";
+}
+
+echo "<nav style='height:750px;overflow:hidden; overflow-y:scroll; background: transparent'><ul>";
+foreach($transactions as &$transaction) {
+    displaytransaction($transaction);
+}
+echo "</ul></nav>";
+?>
+#{/php3}
+
+#{php4}
+<?php
+# make a token balance block
+make_balance_block('tok', $balances->data);
+?>
+#{/php4}

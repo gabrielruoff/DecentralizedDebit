@@ -2,7 +2,8 @@
 # RESTapi to facilitate server-client communication
 
 from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource, request
+from flask_restful import Api, Resource, request
+
 from api_ref import *
 
 app = Flask(__name__)
@@ -47,12 +48,16 @@ class Wallet(Resource):
 
     def post(self, username, currency):
         content = request.get_json()
+        origin = request.remote_addr
         # get request method and body
         method, body = content['method'], content['body']
+        body['origin'] = origin
         # METHODS
         # getbalance: url /Wallet/<username>/<currency> { method: getbalance } body = { session_id }
         # - currency = '*' returns balance of all open wallets under this account
         # getnewaddress: url /Wallet/<username>/<currency> { method: getnewaddress } body = { session_id }
+        # withdrawcrypto: url /Wallet/<username>/<currency> { method: withdrawcrypto }
+        # body = { session_id, rx, amount }
         with wallet() as w:
             func = getattr(w, method)
             print(func)
@@ -63,6 +68,7 @@ class Merchant(Resource):
 
     def post(self, username):
         content = request.get_json()
+        origin = request.remote_addr
         # get request method and body
         method, body = content['method'], content['body']
         # METHODS
@@ -70,7 +76,7 @@ class Merchant(Resource):
         with merchant() as w:
             func = getattr(w, method)
             print(func)
-            return func(username, body)
+            return func(username, body, origin)
 
 # helper function to return usage cases
 # def usage(examples):

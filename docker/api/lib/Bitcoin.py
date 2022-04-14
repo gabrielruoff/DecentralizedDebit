@@ -62,6 +62,20 @@ class bitcoinrpc:
         print(getnew[0])
         return getnew[0]
 
+    def listtransactions(self, wallet_name):
+        self._loadwallet(wallet_name)
+        commands = [["listtransactions"]]
+        transactions = self.rpc_connection.batch_(commands)
+        self._unloadwallet(wallet_name)
+        return transactions
+
+    def getunconfirmedbalance(self, wallet_name):
+        self._loadwallet(wallet_name)
+        commands = [["getunconfirmedbalance"]]
+        balance_unconf = self.rpc_connection.batch_(commands)
+        self._unloadwallet(wallet_name)
+        print(balance_unconf[0])
+        return balance_unconf[0]
 
 # commands = [ ["createrawtransaction", [{"txid":"6dbe0e53413df27183e959922f9df859ea7646b574aafcef446e33978df97f15","vout":31}], [{"bc1q6j9td6m5g6ah8cgscm7wqjuxlrs6kakzadcrh4":amount}]] ]
 # block_hashes = rpc_connection.batch_(commands)
